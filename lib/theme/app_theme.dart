@@ -48,7 +48,7 @@ class AppThemeV2 {
           ),
           bodyLarge: TextStyle(
             fontSize: 16,
-            color: Color(0xFFE2E8F0),
+            color: DesignTokens.textPrimary,
             height: 1.5,
           ),
           bodyMedium: TextStyle(
@@ -83,8 +83,10 @@ class AppThemeV2 {
       cardTheme: CardThemeData(
         color: DesignTokens.surface,
         elevation: 0,
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+          side: const BorderSide(color: DesignTokens.border, width: 1),
         ),
       ),
 
@@ -95,7 +97,7 @@ class AppThemeV2 {
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 55),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+            borderRadius: BorderRadius.circular(DesignTokens.radiusM),
           ),
           elevation: 0,
           textStyle: GoogleFonts.outfit(
@@ -111,15 +113,15 @@ class AppThemeV2 {
         filled: true,
         fillColor: DesignTokens.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+          borderRadius: BorderRadius.circular(DesignTokens.radiusM),
           borderSide: const BorderSide(color: DesignTokens.divider),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+          borderRadius: BorderRadius.circular(DesignTokens.radiusM),
           borderSide: const BorderSide(color: DesignTokens.divider),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+          borderRadius: BorderRadius.circular(DesignTokens.radiusM),
           borderSide: const BorderSide(color: DesignTokens.primary, width: 2),
         ),
         labelStyle: const TextStyle(color: DesignTokens.textSecondary),

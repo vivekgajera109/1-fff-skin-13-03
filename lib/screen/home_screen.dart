@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../theme/design_tokens.dart';
 import '../widgets/premium_widgets.dart';
+import '../theme/design_tokens.dart';
 import '../provider/home_provider.dart';
 import '../helper/analytics_service.dart';
 import '../model/home_item_model.dart';
@@ -24,112 +24,137 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   @override
   void initState() {
     super.initState();
     AnalyticsService.logScreenView(screenName: 'HomeScreen');
   }
 
-  // Create a default model for direct tool access from home
   HomeItemModel get _defaultModel => HomeItemModel(
-    title: "Elite Command",
-    subTitle: "System Tools",
-    image: null,
-  );
+        title: "Home",
+        subTitle: "Dashboard",
+        image: null,
+      );
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<HomeProvider>(context);
+
     return PageWrapper(
       useSafeArea: false,
-      bottomNavigationBar: RemoteConfigService.isAdsShow
-          ? const BanerAdsScreen()
-          : null,
+      extendBody: true,
+      bottomNavigationBar:
+          RemoteConfigService.isAdsShow ? const BanerAdsScreen() : null,
       child: Stack(
         children: [
-          // Atmospheric background elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Cyber App Bar
-              CyberSliverAppBar(
-                title: "Gaming Dashboard",
-                showBack: false,
-                expandedHeight: 230,
-                accentColor: DesignTokens.primary,
-                backgroundExtras: [
-                  _buildAppBarOverlay(),
-                ],
-              ),
-
-              // User Welcome & Stats
+              // Immersive Cyber Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                               Text(
-                                "CURRENT OPERATIVE",
-                                style: GoogleFonts.outfit(
-                                  color: DesignTokens.textSecondary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "ELITE COMMANDER",
-                                style: GoogleFonts.outfit(
-                                  color: DesignTokens.textPrimary,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                          GlowIconButton(
-                            icon: Icons.settings_rounded,
-                            color: DesignTokens.secondary,
-                            onTap: () => _navigate(const SettingScreen()),
-                            size: 22,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      _buildStatsSection(),
+                  padding: const EdgeInsets.only(top: 60, bottom: 40),
+                  child: _buildAppHeader(),
+                ),
+              ),
+
+              // Tactical Menu
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildCommandModule(
+                      id: "SKINS",
+                      title: "GET SKINS",
+                      subtitle: "BROWSE ALL SKINS",
+                      icon: Icons.shield_rounded,
+                      color: DesignTokens.primary,
+                      onTap: () => _navigate(CharactersScreen(
+                        appBarTitle: "Skins",
+                        characters: provider.characters,
+                        isSquared: false,
+                      )),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCommandModule(
+                      id: "DIAMONDS",
+                      title: "GET DIAMONDS",
+                      subtitle: "TIPS AND TRICKS",
+                      icon: Icons.diamond_rounded,
+                      color: DesignTokens.secondary,
+                      onTap: () => _navigate(const DimondTips()),
+                    ),
+                    if (RemoteConfigService.isAdsShow) ...[
+                      const SizedBox(height: 12),
+                      const BanerAdsScreen(),
+                      const SizedBox(height: 12),
                     ],
-                  ),
+                    const SizedBox(height: 8),
+                    _buildCommandModule(
+                      id: "RANK",
+                      title: "RANK HELPER",
+                      subtitle: "CHECK YOUR RANK",
+                      icon: Icons.military_tech_rounded,
+                      color: DesignTokens.accent,
+                      onTap: () =>
+                          _navigate(SelectRankScreen(model: _defaultModel)),
+                    ),
+                    if (RemoteConfigService.isAdsShow) ...[
+                      const SizedBox(height: 12),
+                      const BanerAdsScreen(),
+                      const SizedBox(height: 12),
+                    ],
+                    const SizedBox(height: 8),
+                    _buildCommandModule(
+                      id: "NAME",
+                      title: "NICKNAME",
+                      subtitle: "CREATE COOL NAMES",
+                      icon: Icons.fingerprint_rounded,
+                      color: DesignTokens.highlight,
+                      onTap: () =>
+                          _navigate(NickNameScreen(model: _defaultModel)),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCommandModule(
+                      id: "EMOTES",
+                      title: "EMOTES",
+                      subtitle: "GET FUNNY EMOTES",
+                      icon: Icons.auto_awesome_rounded,
+                      color: const Color(0xFF9E00FF),
+                      onTap: () =>
+                          _navigate(RankedScreen(model: _defaultModel)),
+                    ),
+                    if (RemoteConfigService.isAdsShow) ...[
+                      const SizedBox(height: 12),
+                      const BanerAdsScreen(),
+                      const SizedBox(height: 12),
+                    ],
+                    const SizedBox(height: 8),
+                    _buildCommandModule(
+                      id: "REWARDS",
+                      title: "DAILY REWARDS",
+                      subtitle: "GET FREE REWARDS",
+                      icon: Icons.inventory_2_rounded,
+                      color: Colors.orangeAccent,
+                      onTap: () => _navigate(ClaimScreen(model: _defaultModel)),
+                    ),
+                  ]),
                 ),
               ),
 
-              // Menu Grid Header
-              const SliverPadding(
-                padding: EdgeInsets.fromLTRB(20, 40, 20, 0),
-                sliver: SliverToBoxAdapter(
-                  child: GradientHeader(
-                    title: "System Protocols",
-                    fontSize: 13,
-                  ),
+              // System Preferences
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: _buildSystemCard(),
                 ),
               ),
 
-              // Main Menu Grid
-              _buildGridSection(),
-
-              // Ad Section
+              // Ads Section
               if (RemoteConfigService.isAdsShow) ...[
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
@@ -146,269 +171,173 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 300,
-          right: -80,
-          child: Opacity(
-            opacity: 0.04,
-            child: Icon(Icons.hub_rounded, size: 400, color: DesignTokens.primary),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: -60,
-          child: Opacity(
-            opacity: 0.03,
-            child: Icon(Icons.security_rounded, size: 350, color: DesignTokens.secondary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildAppBarOverlay() {
-    return Positioned(
-      bottom: 70,
-      left: 24,
+  Widget _buildAppHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: DesignTokens.secondary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: DesignTokens.secondary.withOpacity(0.3)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: DesignTokens.secondary,
-                    shape: BoxShape.circle,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: DesignTokens.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(4),
+                  border:
+                      Border.all(color: DesignTokens.primary.withOpacity(0.3)),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  "SECURE UPLINK ACTIVE",
+                child: Text(
+                  "ONLINE",
                   style: GoogleFonts.outfit(
                     fontSize: 8,
                     fontWeight: FontWeight.w900,
-                    color: DesignTokens.secondary,
+                    color: DesignTokens.primary,
                     letterSpacing: 2,
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            "COMMANDER V5.2.0",
-            style: GoogleFonts.outfit(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              color: DesignTokens.textPrimary.withOpacity(0.25),
-              letterSpacing: 4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsSection() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      clipBehavior: Clip.none,
-      child: Row(
-        children: [
-          _buildStatCard("CREDITS", "99,999", Icons.diamond_rounded, DesignTokens.secondary),
-          const SizedBox(width: 16),
-          _buildStatCard("RANK", "LEGEND", Icons.emoji_events_rounded, const Color(0xFFFFD700)),
-          const SizedBox(width: 16),
-          _buildStatCard("ASSETS", "842", Icons.inventory_2_rounded, DesignTokens.primary),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
-    return NeonCard(
-      width: 145,
-      borderColor: color.withOpacity(0.15),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GlowContainer(
-                glowColor: color,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: color.withOpacity(0.2)),
-                  ),
-                  child: Icon(icon, color: color, size: 18),
-                ),
               ),
-              Opacity(
-                opacity: 0.2,
-                child: Icon(icon, color: color, size: 40),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Text(
-            value,
-            style: GoogleFonts.outfit(
-              color: DesignTokens.textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.outfit(
-              color: DesignTokens.textSecondary,
-              fontSize: 9,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGridSection() {
-    final provider = Provider.of<HomeProvider>(context, listen: false);
-    return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 0.88,
-        ),
-        delegate: SliverChildListDelegate([
-          _buildMenuCard(
-            "Characters", 
-            "Operator Archive", 
-            Icons.person_pin_rounded, 
-            DesignTokens.primary,
-            () => _navigate(CharactersScreen(
-              appBarTitle: "Elite Characters", 
-              characters: provider.characters, 
-              isSquared: false
-            )),
-          ),
-          _buildMenuCard(
-            "Diamond Tips", 
-            "Pro Advisory", 
-            Icons.diamond_rounded, 
-            const Color(0xFF00FF9D),
-            () => _navigate(const DimondTips()),
-          ),
-          _buildMenuCard(
-            "Rank System", 
-            "Combat Stats", 
-            Icons.trending_up_rounded, 
-            DesignTokens.secondary,
-            () => _navigate(SelectRankScreen(model: _defaultModel)),
-          ),
-          _buildMenuCard(
-            "Nickname", 
-            "ID Forge", 
-            Icons.badge_rounded, 
-            DesignTokens.accent,
-            () => _navigate(NickNameScreen(model: _defaultModel)),
-          ),
-          _buildMenuCard(
-            "Ranked Check", 
-            "Performance", 
-            Icons.analytics_rounded, 
-            const Color(0xFF7B2FFF),
-            () => _navigate(RankedScreen(model: _defaultModel)),
-          ),
-          _buildMenuCard(
-            "Rewards", 
-            "Claim Center", 
-            Icons.card_giftcard_rounded, 
-            const Color(0xFFFF9F1C),
-            () => _navigate(ClaimScreen(model: _defaultModel)),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildMenuCard(String title, String sub, IconData icon, Color accentColor, VoidCallback onTap) {
-    return NeonCard(
-      onTap: onTap,
-      borderColor: accentColor.withOpacity(0.12),
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GlowContainer(
-                glowColor: accentColor,
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: accentColor.withOpacity(0.2)),
-                  ),
-                  child: Icon(icon, color: accentColor, size: 22),
-                ),
-              ),
-              Icon(Icons.add_rounded, color: accentColor.withOpacity(0.3), size: 16),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+              const SizedBox(width: 12),
               Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                "FFF Skin Tool v0.9.4",
                 style: GoogleFonts.outfit(
-                  color: DesignTokens.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                sub.toUpperCase(),
-                style: GoogleFonts.outfit(
-                  color: DesignTokens.textSecondary,
                   fontSize: 8,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.bold,
+                  color: DesignTokens.textSecondary,
                   letterSpacing: 1,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          Text(
+            "FFF\nSKIN TOOL",
+            style: GoogleFonts.outfit(
+              fontSize: 38,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.textPrimary,
+              height: 0.85,
+              letterSpacing: -2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: 2,
+            width: 80,
+            decoration: BoxDecoration(
+              gradient: DesignTokens.primaryGradient,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommandModule({
+    required String id,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return CyberPanel(
+      onTap: onTap,
+      color: color,
+      child: Row(
+        children: [
+          Column(
+            children: [
+              Text(
+                id,
+                style: GoogleFonts.outfit(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 12),
+              GlowContainer(
+                glowColor: color,
+                blurRadius: 10,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Center(child: Icon(icon, color: color, size: 24)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    color: DesignTokens.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.outfit(
+                    color: DesignTokens.textSecondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.arrow_forward_ios_rounded,
+              color: color.withOpacity(0.3), size: 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSystemCard() {
+    return CyberPanel(
+      color: DesignTokens.textSecondary,
+      onTap: () => _navigate(const SettingScreen()),
+      child: Row(
+        children: [
+          const Icon(Icons.settings_suggest_rounded,
+              color: DesignTokens.textSecondary, size: 20),
+          const SizedBox(width: 16),
+          Text(
+            "SETTINGS",
+            style: GoogleFonts.outfit(
+              color: DesignTokens.textSecondary,
+              fontWeight: FontWeight.w900,
+              fontSize: 10,
+              letterSpacing: 2,
+            ),
+          ),
+          const Spacer(),
+          Icon(Icons.chevron_right_rounded,
+              color: DesignTokens.textSecondary.withOpacity(0.4), size: 16),
         ],
       ),
     );
@@ -416,12 +345,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigate(Widget screen) async {
     await CommonOnTap.openUrl();
-    await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 }
 
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
 
-
-
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

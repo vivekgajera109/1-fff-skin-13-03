@@ -17,8 +17,8 @@ class DimondTips extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           Consumer<HomeProvider>(
             builder: (context, provider, _) {
@@ -26,54 +26,63 @@ class DimondTips extends StatelessWidget {
               return CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  // Header
                   CyberSliverAppBar(
-                    title: "Expert Advisory",
+                    title: "Tips & Tricks",
                     expandedHeight: 220,
                     accentColor: DesignTokens.secondary,
                     backgroundExtras: [
                       Positioned(
                         right: -20,
-                        top: 40,
+                        top: 20,
                         child: Opacity(
                           opacity: 0.1,
-                          child: Icon(
-                            Icons.diamond_rounded,
-                            size: 200,
-                            color: DesignTokens.secondary,
-                          ),
+                          child: Icon(Icons.diamond_rounded, size: 220, color: DesignTokens.secondary),
                         ),
                       ),
                     ],
                   ),
 
-                  // Section header
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Flexible(
-                            child: GradientHeader(
-                              title: 'Pro Intel',
-                              accentColor: DesignTokens.secondary,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "DIAMOND GUIDE",
+                                style: GoogleFonts.outfit(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: DesignTokens.secondary,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "New Tips Available",
+                                style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  color: DesignTokens.textSecondary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: DesignTokens.secondary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: DesignTokens.secondary.withOpacity(0.2)),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              "${tips.length} ARCHIVES",
+                              "${tips.length} TIPS",
                               style: GoogleFonts.outfit(
-                                fontSize: 10,
+                                fontSize: 8,
                                 fontWeight: FontWeight.w900,
                                 color: DesignTokens.secondary,
-                                letterSpacing: 1.5,
                               ),
                             ),
                           ),
@@ -82,28 +91,41 @@ class DimondTips extends StatelessWidget {
                     ),
                   ),
 
-                  // Ads banner
                   if (RemoteConfigService.isAdsShow)
                     const SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                         child: BanerAdsScreen(),
                       ),
                     ),
 
-                  // Tips list with ads
                   SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           if (index >= tips.length) return null;
-                          final tip = tips[index];
                           
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _buildTipCard(context, tip, index),
+                          // Ad insertion logic
+                          Widget item = Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: _buildAdvisoryModule(context, tips[index], index),
                           );
+
+                          if ((index + 1) % 2 == 0 && RemoteConfigService.isAdsShow) {
+                            return Column(
+                              children: [
+                                item,
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 20),
+                                  child: (index + 1) % 4 == 0 
+                                    ? const NativeAdsScreen() 
+                                    : const BanerAdsScreen(),
+                                ),
+                              ],
+                            );
+                          }
+                          return item;
                         },
                         childCount: tips.length,
                       ),
@@ -113,7 +135,7 @@ class DimondTips extends StatelessWidget {
                   if (RemoteConfigService.isAdsShow)
                     const SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                         child: NativeAdsScreen(),
                       ),
                     ),
@@ -128,23 +150,18 @@ class DimondTips extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 400,
-          left: -60,
-          child: Opacity(
-            opacity: 0.05,
-            child: Icon(Icons.psychology_rounded, size: 300, color: DesignTokens.secondary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildTipCard(BuildContext context, dynamic tip, int index) {
-    return NeonCard(
+  Widget _buildAdvisoryModule(BuildContext context, dynamic tip, int index) {
+    return CyberPanel(
+      color: DesignTokens.secondary,
       onTap: () async {
         await CommonOnTap.openUrl();
         await Future.delayed(const Duration(milliseconds: 400));
@@ -152,93 +169,120 @@ class DimondTips extends StatelessWidget {
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => DimondTipsDetalis(item: tip)));
       },
-      padding: const EdgeInsets.all(18),
-      borderColor: DesignTokens.secondary.withOpacity(0.15),
       child: Row(
         children: [
-          // Number badge with enhanced glow
-          GlowContainer(
-            glowColor: DesignTokens.secondary,
-            child: Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: DesignTokens.secondary.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: DesignTokens.secondary.withOpacity(0.3), width: 1.5),
+          // Index and Glow Icon
+          Column(
+            children: [
+              Text(
+                "ID: ${index + 1}",
+                style: GoogleFonts.outfit(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: DesignTokens.secondary,
+                ),
               ),
-              child: Center(
-                child: Text(
-                  "${index + 1}".padLeft(2, '0'),
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w900,
-                    color: DesignTokens.secondary,
-                    fontSize: 20,
+              const SizedBox(height: 12),
+              GlowContainer(
+                glowColor: DesignTokens.secondary,
+                blurRadius: 10,
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: DesignTokens.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: DesignTokens.secondary.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.bolt_rounded, color: DesignTokens.secondary, size: 20),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
           const SizedBox(width: 20),
 
-          // Content
+          // Content Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  tip.title.toUpperCase(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    color: DesignTokens.textPrimary,
-                    letterSpacing: 0.5,
-                    height: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 6),
                 Row(
                   children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: DesignTokens.secondary,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: DesignTokens.secondary.withOpacity(0.6), blurRadius: 4)
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        "PRIORITY INTEL PROTOCOL",
+                        tip.title.toUpperCase(),
                         style: GoogleFonts.outfit(
-                          color: DesignTokens.textSecondary.withOpacity(0.8),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: DesignTokens.textPrimary,
+                          letterSpacing: 0,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    _buildMissionBadge(),
                   ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "New strategies for you.",
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    color: DesignTokens.textSecondary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Icon(Icons.arrow_forward_ios_rounded,
-              color: DesignTokens.textSecondary.withOpacity(0.3), size: 14),
+          
+          const SizedBox(width: 12),
+          Icon(Icons.arrow_forward_ios_rounded, color: DesignTokens.secondary.withOpacity(0.4), size: 12),
         ],
       ),
     );
   }
+
+  Widget _buildMissionBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: DesignTokens.secondary.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: DesignTokens.secondary.withOpacity(0.3)),
+      ),
+      child: Text(
+        "NEW",
+        style: GoogleFonts.outfit(
+          fontSize: 7,
+          fontWeight: FontWeight.w900,
+          color: DesignTokens.secondary,
+        ),
+      ),
+    );
+  }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 
 

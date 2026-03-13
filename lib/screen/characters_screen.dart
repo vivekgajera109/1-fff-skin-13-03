@@ -25,13 +25,12 @@ class CharactersScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Atmospheric background
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Cyber header
               CyberSliverAppBar(
                 title: appBarTitle,
                 expandedHeight: 220,
@@ -39,54 +38,56 @@ class CharactersScreen extends StatelessWidget {
                 backgroundExtras: [
                   Positioned(
                     right: -30,
-                    bottom: -15,
+                    top: 20,
                     child: Opacity(
-                      opacity: 0.08,
-                      child: Icon(
-                        Icons.person_pin_rounded,
-                        size: 220,
-                        color: DesignTokens.primary,
-                      ),
+                      opacity: 0.1,
+                      child: Icon(Icons.person_pin_rounded, size: 220, color: DesignTokens.primary),
                     ),
                   ),
                 ],
               ),
 
-              // Ads banner
-              if (RemoteConfigService.isAdsShow)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    child: BanerAdsScreen(),
-                  ),
-                ),
-
-              // Stats bar
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Flexible(
-                        child: GradientHeader(
-                          title: 'Asset Library',
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "COLLECTION",
+                            style: GoogleFonts.outfit(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: DesignTokens.primary,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Items Available",
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: DesignTokens.textSecondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: DesignTokens.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: DesignTokens.primary.withOpacity(0.2)),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          "${characters.length} ARCHIVES",
+                          "${characters.length} ITEMS",
                           style: GoogleFonts.outfit(
-                            fontSize: 10,
+                            fontSize: 8,
                             fontWeight: FontWeight.w900,
                             color: DesignTokens.primary,
-                            letterSpacing: 1.5,
                           ),
                         ),
                       ),
@@ -103,50 +104,47 @@ class CharactersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 350,
-          left: -40,
-          child: Opacity(
-            opacity: 0.04,
-            child: Icon(Icons.shield_rounded, size: 300, color: DesignTokens.primary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
   List<Widget> _buildGridWithAds(BuildContext context) {
     List<Widget> slivers = [];
-    for (int i = 0; i < characters.length; i += 4) {
-      int end = (i + 4 < characters.length) ? i + 4 : characters.length;
+    for (int i = 0; i < characters.length; i += 2) {
+      int end = (i + 2 < characters.length) ? i + 2 : characters.length;
       final chunk = characters.sublist(i, end);
       slivers.add(
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 0.82,
+              mainAxisSpacing: 20,
+              crossAxisSpacing: 20,
+              childAspectRatio: 0.78,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) =>
-                  _buildCharacterCard(context, chunk[index], i + index),
+                  _buildArchiveUnit(context, chunk[index], i + index),
               childCount: chunk.length,
             ),
           ),
         ),
       );
       if (end < characters.length && RemoteConfigService.isAdsShow) {
+        final adIndex = i ~/ 2;
         slivers.add(
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: NativeAdsScreen(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: adIndex % 2 == 0
+                  ? const NativeAdsScreen()
+                  : const BanerAdsScreen(),
             ),
           ),
         );
@@ -156,110 +154,101 @@ class CharactersScreen extends StatelessWidget {
     return slivers;
   }
 
-  Widget _buildCharacterCard(
-      BuildContext context, HomeItemModel item, int index) {
-    final accents = [
+  Widget _buildArchiveUnit(BuildContext context, HomeItemModel item, int index) {
+    final colors = [
       DesignTokens.primary,
       DesignTokens.secondary,
       DesignTokens.accent,
-      const Color(0xFFF1C40F),
+      const Color(0xFF00FF9D),
     ];
-    final accent = accents[index % accents.length];
+    final color = colors[index % colors.length];
 
-    return NeonCard(
+    return CyberPanel(
+      color: color,
       onTap: () => _openDetails(context, item, isSquared),
-      padding: EdgeInsets.zero,
-      borderColor: accent.withOpacity(0.15),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Image area
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    margin: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: accent.withOpacity(0.05),
-                    ),
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "ID: ${index + 1}",
+                style: GoogleFonts.outfit(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: color,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: GlowContainer(
-                    glowColor: accent,
-                    blurRadius: 20,
-                    child: Hero(
-                      tag: 'character_${item.title}',
-                      child: Image.asset(
-                        item.image!,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              _buildEliteBadge(color),
+            ],
           ),
-
-          // Info footer
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(DesignTokens.radiusL),
-                bottomRight: Radius.circular(DesignTokens.radiusL),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Center(
+              child: GlowContainer(
+                glowColor: color,
+                blurRadius: 15,
+                child: Hero(
+                  tag: 'character_${item.title}',
+                  child: Image.asset(item.image!, fit: BoxFit.contain),
+                ),
               ),
             ),
-            child: Column(
-              children: [
-                Text(
-                  item.title.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    color: DesignTokens.textPrimary,
-                    letterSpacing: 0.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            item.title.toUpperCase(),
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.textPrimary,
+              letterSpacing: 0.5,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: color.withOpacity(0.2)),
+            ),
+            child: Center(
+              child: Text(
+                "VIEW",
+                style: GoogleFonts.outfit(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                  letterSpacing: 2,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: accent,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: accent.withOpacity(0.6), blurRadius: 4)
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "CLASS ELITE",
-                      style: GoogleFonts.outfit(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: DesignTokens.textSecondary.withOpacity(0.8),
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEliteBadge(Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Text(
+        "ELITE",
+        style: GoogleFonts.outfit(
+          fontSize: 7,
+          fontWeight: FontWeight.w900,
+          color: color,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -276,5 +265,21 @@ class CharactersScreen extends StatelessWidget {
                 characters: character, isSquared: isSquared)));
   }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 

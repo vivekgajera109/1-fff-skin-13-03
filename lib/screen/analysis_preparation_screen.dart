@@ -11,53 +11,25 @@ import '../helper/remote_config_service.dart';
 
 class AnalysisPreparationScreen extends StatefulWidget {
   final HomeItemModel model;
-
-  const AnalysisPreparationScreen({
-    super.key,
-    required this.model,
-  });
+  const AnalysisPreparationScreen({super.key, required this.model});
 
   @override
-  State<AnalysisPreparationScreen> createState() =>
-      _AnalysisPreparationScreenState();
+  State<AnalysisPreparationScreen> createState() => _AnalysisPreparationScreenState();
 }
 
-class _AnalysisPreparationScreenState
-    extends State<AnalysisPreparationScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _ring1Ctrl;
-  late AnimationController _ring2Ctrl;
-  late AnimationController _ring3Ctrl;
-  late AnimationController _pulseCtrl;
-  late Animation<double> _pulseAnim;
+class _AnalysisPreparationScreenState extends State<AnalysisPreparationScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _mainCtrl;
 
   @override
   void initState() {
     super.initState();
     AnalyticsService.logScreenView(screenName: 'AnalysisPreparationScreen');
-
-    _ring1Ctrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 8))
-      ..repeat();
-    _ring2Ctrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 12))
-      ..repeat();
-    _ring3Ctrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 4))
-      ..repeat(reverse: true);
-    _pulseCtrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 2))
-      ..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 0.92, end: 1.05).animate(
-        CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+    _mainCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 10))..repeat();
   }
 
   @override
   void dispose() {
-    _ring1Ctrl.dispose();
-    _ring2Ctrl.dispose();
-    _ring3Ctrl.dispose();
-    _pulseCtrl.dispose();
+    _mainCtrl.dispose();
     super.dispose();
   }
 
@@ -67,44 +39,59 @@ class _AnalysisPreparationScreenState
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Blueprint Background
+          _buildBackgroundBlueprint(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
+              // Header
               CyberSliverAppBar(
-                title: "Security Link",
+                title: "Core Synchronizer",
                 expandedHeight: 200,
-                accentColor: DesignTokens.primary,
+                accentColor: DesignTokens.secondary,
                 backgroundExtras: [
                   Positioned(
-                    right: -20,
-                    bottom: -10,
+                    right: -40,
+                    top: 20,
                     child: Opacity(
-                      opacity: 0.08,
-                      child: Icon(Icons.security_rounded, size: 180, color: DesignTokens.primary),
+                      opacity: 0.1,
+                      child: Icon(Icons.hub_rounded, size: 220, color: DesignTokens.secondary),
                     ),
                   ),
                 ],
               ),
+
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   child: Column(
                     children: [
-                      _buildScannerHero(),
+                      // The Holographic Core
+                      _buildHolographicCore(),
+
                       const SizedBox(height: 56),
-                      _buildProgressCard(),
-                      const SizedBox(height: 40),
-                      const GradientHeader(title: 'Protocol Logs', fontSize: 13),
+
+                      // Stability Matrix (Replaces Progress Card)
+                      _buildStabilityMatrix(),
+
+                      const SizedBox(height: 48),
+
+                      // Operational Logs (Replaces Log Items)
+                      const GradientHeader(title: 'Terminal Sequence', fontSize: 13),
                       const SizedBox(height: 24),
-                      _buildLogItem("Bypass Firewalls", true, "OK"),
-                      _buildLogItem("Inject Payload", true, "DONE"),
-                      _buildLogItem("Establish Uplink", true, "SYNCED"),
-                      _buildLogItem("Internal Sync", false, "STAGING"),
-                      const SizedBox(height: 40),
-                      _buildExecuteCard(),
+                      _buildTerminalWindow(),
+
+                      const SizedBox(height: 56),
+
+                      if (RemoteConfigService.isAdsShow) ...[
+                        const NativeAdsScreen(),
+                        const SizedBox(height: 36),
+                      ],
+
+                      // The Tactical Execution Action
+                      _buildTacticalExecuteAction(context),
+
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -117,310 +104,208 @@ class _AnalysisPreparationScreenState
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 350,
-          left: -60,
-          child: Opacity(
-            opacity: 0.04,
-            child: Icon(Icons.radar_rounded, size: 350, color: DesignTokens.primary),
-          ),
-        ),
-      ],
+  Widget _buildBackgroundBlueprint() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildScannerHero() {
-    return Column(
-      children: [
-        SizedBox(
-          width: 320,
-          height: 320,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Outer Ring Glow
-              Container(
-                width: 280,
-                height: 280,
+  Widget _buildHolographicCore() {
+    return AnimatedBuilder(
+      animation: _mainCtrl,
+      builder: (context, _) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Orbiting Data Nodes
+            Transform.rotate(
+              angle: _mainCtrl.value * 2 * math.pi,
+              child: CustomPaint(
+                size: const Size(280, 280),
+                painter: _HoloRingPainter(color: DesignTokens.secondary, segments: 2),
+              ),
+            ),
+            Transform.rotate(
+              angle: -_mainCtrl.value * 3 * math.pi,
+              child: CustomPaint(
+                size: const Size(220, 220),
+                painter: _HoloRingPainter(color: DesignTokens.primary, segments: 3),
+              ),
+            ),
+
+            // central core with character hero
+            GlowContainer(
+              glowColor: DesignTokens.secondary,
+              blurRadius: 40 + (math.sin(_mainCtrl.value * 12 * math.pi) * 15),
+              child: Container(
+                width: 140,
+                height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      DesignTokens.primary.withOpacity(0.12),
-                      DesignTokens.primary.withOpacity(0),
-                    ],
-                  ),
+                  border: Border.all(color: DesignTokens.secondary.withOpacity(0.3), width: 2),
                 ),
-              ),
-
-              // Scanner Rings
-              RotationTransition(
-                turns: _ring1Ctrl,
-                child: _buildRing(270, DesignTokens.primary.withOpacity(0.1), 1),
-              ),
-              RotationTransition(
-                turns: Tween(begin: 1.0, end: 0.0).animate(_ring2Ctrl),
-                child: _buildRing(220, DesignTokens.secondary.withOpacity(0.15), 2),
-              ),
-              RotationTransition(
-                turns: _ring3Ctrl,
-                child: _buildRing(170, DesignTokens.primary.withOpacity(0.25), 1),
-              ),
-
-              // Character Hero with Pulse
-              ScaleTransition(
-                scale: _pulseAnim,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: DesignTokens.primary.withOpacity(0.25),
-                        blurRadius: 70,
-                        spreadRadius: -15,
-                      ),
-                    ],
-                  ),
+                child: ClipOval(
                   child: Hero(
                     tag: 'character_${widget.model.title}',
                     child: widget.model.image != null 
                         ? Image.asset(widget.model.image!, fit: BoxFit.contain)
-                        : const Icon(Icons.verified_user_rounded, size: 90, color: DesignTokens.primary),
+                        : const Icon(Icons.verified_user_rounded, size: 70, color: DesignTokens.secondary),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 36),
-        Text(
-          "SECURE CHANNEL STABLE",
-          style: GoogleFonts.outfit(
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            color: DesignTokens.primary,
-            letterSpacing: 4.0,
-          ),
-        ),
-        const SizedBox(height: 14),
-        Text(
-          widget.model.title.toUpperCase(),
-          style: GoogleFonts.outfit(
-            fontSize: 34,
-            fontWeight: FontWeight.w900,
-            color: DesignTokens.textPrimary,
-            letterSpacing: -0.5,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRing(double size, Color color, int dashCount) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: color, width: 2),
-      ),
-      child: Stack(
-        children: List.generate(dashCount, (i) {
-          final angle = (i * (360 / dashCount)) * 0.0174533; // radians
-          return Positioned(
-            left: size / 2 + (size / 2 - 1) * math.cos(angle) - 6,
-            top: size / 2 + (size / 2 - 1) * math.sin(angle) - 6,
-            child: Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color.withOpacity(1.0),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(color: color.withOpacity(0.6), blurRadius: 10),
-                ],
-              ),
             ),
-          );
-        }),
-      ),
-    );
-  }
 
-  Widget _buildProgressCard() {
-    return NeonCard(
-      padding: const EdgeInsets.all(32),
-      borderColor: DesignTokens.primary.withOpacity(0.25),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              GlowContainer(
-                glowColor: DesignTokens.primary,
-                child: const Icon(Icons.rocket_launch_rounded, color: DesignTokens.primary, size: 30),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Uplink Status",
-                      style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: DesignTokens.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      "Protocol Alpha Synchronized",
-                      style: GoogleFonts.outfit(
-                        fontSize: 13,
-                        color: DesignTokens.textSecondary,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+            // Scan line pulse
+            Positioned(
+              top: 70 + (math.sin(_mainCtrl.value * 8 * math.pi) * 60),
+              child: Container(
+                width: 180,
+                height: 1,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(color: DesignTokens.secondary.withOpacity(0.6), blurRadius: 8, spreadRadius: 1)
                   ],
                 ),
               ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStabilityMatrix() {
+    return CyberPanel(
+      color: DesignTokens.secondary,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: DesignTokens.secondary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.bolt_rounded, color: DesignTokens.secondary, size: 32),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "CHANNEL STABILITY",
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: DesignTokens.secondary,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "LINK_ALPHA_99",
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: DesignTokens.textPrimary,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            "99%",
+            style: GoogleFonts.outfit(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.secondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTerminalWindow() {
+    final logs = [
+      "ACCESSING_MEM_BLOCKS...",
+      "BYPASSING_GATEWAY_V4...",
+      "UPLINK_ENCRYPTION_STABLE.",
+      "INJECTING_PAYLOAD...",
+      "CORE_DNA_VERIFIED.",
+    ];
+
+    return CyberPanel(
+      child: Column(
+        children: logs.map((log) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.chevron_right_rounded, size: 14, color: DesignTokens.secondary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  log,
+                  style: GoogleFonts.outfit(
+                    fontSize: 12,
+                    color: DesignTokens.textSecondary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
               Text(
-                "94%",
+                "OK",
                 style: GoogleFonts.outfit(
-                  fontSize: 26,
+                  fontSize: 10,
                   fontWeight: FontWeight.w900,
                   color: DesignTokens.secondary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 32),
-          // Custom progress bar with better aesthetics
-          Stack(
-            children: [
-              Container(
-                height: 10,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              LayoutBuilder(builder: (context, c) {
-                return Container(
-                  width: c.maxWidth * 0.94,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [DesignTokens.primary, DesignTokens.secondary],
-                    ),
-                    borderRadius: BorderRadius.circular(5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: DesignTokens.primary.withOpacity(0.4), 
-                        blurRadius: 12,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-          ),
-        ],
+        )).toList(),
       ),
     );
   }
 
-  Widget _buildLogItem(String title, bool completed, String status) {
-    final color = completed ? DesignTokens.primary : DesignTokens.textSecondary.withOpacity(0.6);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-      decoration: BoxDecoration(
-        color: completed ? DesignTokens.primary.withOpacity(0.04) : DesignTokens.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(completed ? 0.2 : 0.1), width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Icon(completed ? Icons.check_circle_rounded : Icons.pending_rounded, 
-               size: 20, color: color),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Text(
-              title.toUpperCase(),
-              style: GoogleFonts.outfit(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: completed ? DesignTokens.textPrimary : DesignTokens.textSecondary.withOpacity(0.6),
-                letterSpacing: 1.5,
-              ),
-            ),
+  Widget _buildTacticalExecuteAction(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          "PROTOCOL VERIFICATION COMPLETE",
+          style: GoogleFonts.outfit(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: DesignTokens.textSecondary,
+            letterSpacing: 2,
           ),
-          Text(
-            status,
+        ),
+        const SizedBox(height: 24),
+        GradientButton(
+          text: "INITIALIZE LINK",
+          icon: Icons.power_rounded,
+          onPressed: () => _onExecute(context),
+          color: DesignTokens.secondary,
+        ),
+        const SizedBox(height: 16),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            "ABORT_MISSION",
             style: GoogleFonts.outfit(
-              fontSize: 11,
+              color: DesignTokens.accent.withOpacity(0.5),
+              fontSize: 10,
               fontWeight: FontWeight.w900,
-              color: color,
-              letterSpacing: 1.0,
+              letterSpacing: 2,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExecuteCard() {
-    return NeonCard(
-      padding: const EdgeInsets.all(36),
-      borderColor: DesignTokens.secondary.withOpacity(0.25),
-      child: Column(
-        children: [
-          if (RemoteConfigService.isAdsShow) ...[
-            const NativeAdsScreen(),
-            const SizedBox(height: 36),
-          ],
-          GlowContainer(
-            glowColor: DesignTokens.secondary,
-            child: const Icon(Icons.flash_on_rounded, color: DesignTokens.secondary, size: 52),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            "INITIALIZE EXECUTION",
-            style: GoogleFonts.outfit(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: DesignTokens.textPrimary,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            "Protocol verification complete. Establish the character link to finalize synchronization sequence.",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: DesignTokens.textSecondary, 
-              fontSize: 15, 
-              height: 1.7,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const SizedBox(height: 40),
-          GradientButton(
-            text: "EXECUTE LINK",
-            icon: Icons.power_settings_new_rounded,
-            onPressed: () => _onExecute(context),
-            color: DesignTokens.secondary,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -437,6 +322,60 @@ class _AnalysisPreparationScreenState
             builder: (_) => NickNameScreen(model: widget.model)));
   }
 }
+
+class _HoloRingPainter extends CustomPainter {
+  final Color color;
+  final int segments;
+  _HoloRingPainter({required this.color, this.segments = 4});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withOpacity(0.15)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    canvas.drawCircle(center, radius, paint);
+
+    final segmentPaint = Paint()
+      ..color = color
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < segments; i++) {
+      final startAngle = (i * (360 / segments)) * math.pi / 180;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        0.5,
+        false,
+        segmentPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 50) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 50) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 
 

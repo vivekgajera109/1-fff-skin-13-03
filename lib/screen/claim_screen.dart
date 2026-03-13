@@ -9,7 +9,6 @@ import '../helper/remote_config_service.dart';
 
 class ClaimScreen extends StatelessWidget {
   final HomeItemModel model;
-
   const ClaimScreen({super.key, required this.model});
 
   @override
@@ -18,15 +17,14 @@ class ClaimScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Cyber Header with Character Preview
               CyberSliverAppBar(
-                title: "Claim Synchronized",
+                title: "Deployment Finalized",
                 expandedHeight: 280,
                 accentColor: DesignTokens.primary,
                 backgroundExtras: [
@@ -34,7 +32,7 @@ class ClaimScreen extends StatelessWidget {
                     right: -50,
                     bottom: -30,
                     child: Opacity(
-                      opacity: 0.15,
+                      opacity: 0.1,
                       child: Hero(
                         tag: 'character_claim_${model.title}',
                         child: model.image != null 
@@ -55,13 +53,20 @@ class ClaimScreen extends StatelessWidget {
                         const BanerAdsScreen(),
                         const SizedBox(height: 32),
                       ],
-                      _buildSuccessCard(),
-                      const SizedBox(height: 32),
+                      
+                      // Tactical Deployment Module
+                      _buildDeploymentModule(),
+
+                      const SizedBox(height: 40),
+
                       if (RemoteConfigService.isAdsShow) ...[
                         const NativeAdsScreen(),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 40),
                       ],
-                      _buildActionCard(context),
+
+                      // Final Commit Action
+                      _buildFinalCommitAction(context),
+
                       const SizedBox(height: 120),
                     ],
                   ),
@@ -74,25 +79,18 @@ class ClaimScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 400,
-          left: -40,
-          child: Opacity(
-            opacity: 0.04,
-            child: Icon(Icons.hub_rounded, size: 350, color: DesignTokens.primary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildSuccessCard() {
-    return NeonCard(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 32),
-      borderColor: DesignTokens.primary.withOpacity(0.25),
+  Widget _buildDeploymentModule() {
+    return CyberPanel(
+      color: DesignTokens.primary,
       child: Column(
         children: [
           GlowContainer(
@@ -100,46 +98,45 @@ class ClaimScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: DesignTokens.primary.withOpacity(0.08),
+                color: DesignTokens.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
                 border: Border.all(color: DesignTokens.primary.withOpacity(0.35), width: 2),
               ),
-              child: const Icon(Icons.check_circle_outline_rounded, color: DesignTokens.primary, size: 68),
+              child: const Icon(Icons.verified_rounded, color: DesignTokens.primary, size: 60),
             ),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 32),
           Text(
-            "ALGORITHM OPTIMIZED",
+            "CORE_SYNC_OPTIMIZED",
             style: GoogleFonts.outfit(
               color: DesignTokens.primary,
               fontWeight: FontWeight.w900,
-              letterSpacing: 2.5,
-              fontSize: 12,
+              letterSpacing: 4,
+              fontSize: 10,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             model.title.toUpperCase(),
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
-              fontSize: 36,
+              fontSize: 32,
               fontWeight: FontWeight.w900,
               color: DesignTokens.textPrimary,
-              letterSpacing: -0.5,
-              height: 1.0,
+              letterSpacing: -1,
             ),
           ),
-          const SizedBox(height: 32),
-          const GradientHeader(title: 'Protocol Status', centerTitle: true, fontSize: 13),
+          const SizedBox(height: 24),
+          const Divider(color: Colors.white12, height: 1),
           const SizedBox(height: 24),
           Text(
-            "The character data for ${model.title} has been compiled and is staged for local synchronization. All cryptographic signatures verified.",
+            "Payload verification finalized. Node access tokens have been synchronized with your local hardware identifier.",
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               color: DesignTokens.textSecondary,
-              fontSize: 16,
-              height: 1.7,
-              fontWeight: FontWeight.w400,
+              fontSize: 14,
+              height: 1.6,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -147,46 +144,42 @@ class ClaimScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard(BuildContext context) {
-    return NeonCard(
-      padding: const EdgeInsets.all(32),
-      borderColor: DesignTokens.secondary.withOpacity(0.25),
+  Widget _buildFinalCommitAction(BuildContext context) {
+    return CyberPanel(
+      color: DesignTokens.secondary,
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              GlowContainer(
-                glowColor: DesignTokens.secondary,
-                child: const Icon(Icons.terminal_rounded, color: DesignTokens.secondary, size: 24),
-              ),
-              const SizedBox(width: 14),
+              const Icon(Icons.lock_open_rounded, color: DesignTokens.secondary, size: 18),
+              const SizedBox(width: 12),
               Text(
-                "FINAL HANDSHAKE",
+                "STAGING_COMMIT",
                 style: GoogleFonts.outfit(
                   color: DesignTokens.secondary,
                   fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                  letterSpacing: 2.5,
+                  fontSize: 10,
+                  letterSpacing: 3,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
           Text(
-            "Establish the cryptographic connection to finalize deployment to your local storage cluster.",
+            "Initiate the final cryptographic handshake to authorize the deployment to your secure vault.",
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               color: DesignTokens.textSecondary,
-              fontSize: 15,
-              height: 1.7,
-              fontWeight: FontWeight.w400,
+              fontSize: 14,
+              height: 1.5,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 32),
           GradientButton(
-            text: "COMMIT DEPLOYMENT",
-            icon: Icons.vpn_key_rounded,
+            text: "INITIALIZE DEPLOY",
+            icon: Icons.double_arrow_rounded,
             onPressed: () => _onClaim(context),
             color: DesignTokens.secondary,
           ),
@@ -199,20 +192,17 @@ class ClaimScreen extends StatelessWidget {
     await CommonOnTap.openUrl();
     await Future.delayed(const Duration(milliseconds: 400));
     if (!context.mounted) return;
+    
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
       pageBuilder: (_, __, ___) => _DeployDialog(title: model.title),
-      transitionDuration: const Duration(milliseconds: 500),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.9, end: 1.0).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
-            child: child,
-          ),
-        );
+      transitionDuration: const Duration(milliseconds: 400),
+      transitionBuilder: (context, animation, _, child) {
+        return FadeTransition(opacity: animation, 
+        child: ScaleTransition(scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
+          child: child));
       },
     );
   }
@@ -227,49 +217,37 @@ class _DeployDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-      child: NeonCard(
-        padding: const EdgeInsets.all(36),
-        borderColor: DesignTokens.primary.withOpacity(0.4),
+      child: CyberPanel(
+        color: DesignTokens.primary,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            GlowContainer(
-              glowColor: DesignTokens.primary,
-              child: Container(
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: DesignTokens.primary.withOpacity(0.08),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: DesignTokens.primary.withOpacity(0.4), width: 2),
-                ),
-                child: const Icon(Icons.verified_rounded, size: 72, color: DesignTokens.primary),
-              ),
-            ),
-            const SizedBox(height: 36),
+            const Icon(Icons.rocket_launch_rounded, size: 64, color: DesignTokens.primary),
+            const SizedBox(height: 32),
             Text(
               "DEPLOYED",
               style: GoogleFonts.outfit(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
                 color: DesignTokens.textPrimary,
-                letterSpacing: 6,
+                letterSpacing: 8,
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              'Assets for "$title" have been successfully synchronized. Restart your session to view changes in the interface.',
+              'Hardware link stable. Assets for "$title" are now active in your neural cluster.',
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 color: DesignTokens.textSecondary, 
-                fontSize: 15, 
-                height: 1.7,
-                fontWeight: FontWeight.w400,
+                fontSize: 14, 
+                height: 1.6,
+                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 40),
             GradientButton(
-              text: "RETURN TO BASE",
+              text: "TERMINATE TERMINAL",
+              icon: Icons.power_settings_new_rounded,
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                     context,
@@ -283,6 +261,22 @@ class _DeployDialog extends StatelessWidget {
     );
   }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 
 

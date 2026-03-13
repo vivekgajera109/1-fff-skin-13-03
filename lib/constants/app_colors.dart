@@ -4,19 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // --- BASE ---
-  static const Color black = Color(0xFF020617);
-  static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF070A15);
+  static const Color white = Color(0xFFF0F4FF);
   static const Color transparent = Colors.transparent;
 
-  // --- DARK THEME (Premium Midnight) ---
-  static const Color darkBackground = Color(0xFF020617); // Slate 950
-  static const Color darkSurface = Color(0xFF0F172A); // Slate 900
-  static const Color darkCard = Color(0xFF1E293B); // Slate 800
-  static const Color darkBorder = Color(0xFF334155); // Slate 700
-  static const Color darkTextPrimary = Color(0xFFF8FAFC);
-  static const Color darkTextSecondary = Color(0xFF94A3B8);
+  // --- DARK THEME (Premium Gaming) ---
+  static const Color darkBackground = Color(0xFF070A15);
+  static const Color darkSurface = Color(0xFF0F1425);
+  static const Color darkCard = Color(0xFF161C32);
+  static const Color darkBorder = Color(0xFF1F2943);
+  static const Color darkTextPrimary = Color(0xFFF0F4FF);
+  static const Color darkTextSecondary = Color(0xFF8A94AD);
 
-  // --- LIGHT THEME (Soft Arctic) ---
+  // --- LIGHT THEME (DEPRECATED) ---
   static const Color lightBackground = Color(0xFFF8FAFC);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightCard = Color(0xFFF1F5F9);
@@ -24,42 +24,44 @@ class AppColors {
   static const Color lightTextPrimary = Color(0xFF1E293B);
   static const Color lightTextSecondary = Color(0xFF64748B);
 
-  // --- BRAND (Vibrant Premium) ---
-  static const Color primary = Color(0xFF6366F1); // Indigo
-  static const Color secondary = Color(0xFFA855F7); // Purple
-  static const Color accent = Color(0xFF2DD4BF); // Teal
+  // --- BRAND (New Gaming System) ---
+  static const Color primary = Color(0xFF7000FF);
+  static const Color secondary = Color(0xFF00F0FF);
+  static const Color accent = Color(0xFFFF006B);
+  static const Color highlight = Color(0xFF00FF9D);
 
   // --- STATUS ---
-  static const Color success = Color(0xFF10B981);
-  static const Color error = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
+  static const Color success = Color(0xFF00FF9D);
+  static const Color error = Color(0xFFFF006B);
+  static const Color warning = Color(0xFFFFCC00);
 
   // --- COMPATIBILITY NAMES ---
   static const Color background = darkBackground;
   static const Color card = darkCard;
   static const Color textPrimary = darkTextPrimary;
   static const Color textSecondary = darkTextSecondary;
-  static const Color danger = Color(0xFFEF4444);
-  static const Color divider = Color(0xFF334155);
+  static const Color danger = error;
+  static const Color divider = darkBorder;
 
   // --- GRADIENTS ---
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF2563EB), Color(0xFF7C3AED)], // Deep Blue to purple
+    colors: [primary, Color(0xFF9E00FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient surfaceGradient = LinearGradient(
-    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+    colors: [darkSurface, darkCard],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient accentGradient = LinearGradient(
-    colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
+    colors: [accent, Color(0xFFFF5C00)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
 }
 
 class AppTheme {

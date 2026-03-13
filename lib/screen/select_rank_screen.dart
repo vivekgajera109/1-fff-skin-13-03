@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/premium_widgets.dart';
 import '../common/Ads/ads_card.dart';
@@ -10,7 +11,6 @@ import '../helper/remote_config_service.dart';
 
 class SelectRankScreen extends StatelessWidget {
   final HomeItemModel model;
-
   const SelectRankScreen({super.key, required this.model});
 
   @override
@@ -19,60 +19,80 @@ class SelectRankScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               CyberSliverAppBar(
-                title: "League Rank",
-                expandedHeight: 240,
+                title: "Select Rank",
+                expandedHeight: 220,
                 accentColor: DesignTokens.primary,
                 backgroundExtras: [
                   Positioned(
                     right: -40,
-                    top: -10,
+                    top: 20,
                     child: Opacity(
-                      opacity: 0.15,
-                      child: Hero(
-                        tag: 'character_select_${model.title}',
-                        child: model.image != null
-                            ? Image.asset(model.image!,
-                                height: 300, fit: BoxFit.contain)
-                            : Icon(Icons.person_rounded,
-                                size: 200, color: DesignTokens.primary),
-                      ),
+                      opacity: 0.1,
+                      child: Icon(Icons.stars_rounded, size: 220, color: DesignTokens.primary),
                     ),
                   ),
                 ],
               ),
 
-              // Section header
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 32, 24, 24),
-                  child: GradientHeader(title: 'Target Division', fontSize: 13),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "CHOOSE YOUR RANK",
+                        style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: DesignTokens.primary,
+                          letterSpacing: 3,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Select your current game rank to proceed.",
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          color: DesignTokens.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
-              // Rank grid
+              if (RemoteConfigService.isAdsShow)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: BanerAdsScreen(),
+                  ),
+                ),
+
+              // Tactical Rank Modules
               Consumer<HomeProvider>(
                 builder: (context, provider, _) {
                   final rankImages = provider.selectRankImage;
                   return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverGrid(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: 0.72,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 20,
+                        childAspectRatio: 0.75,
                       ),
                       delegate: SliverChildBuilderDelegate(
-                        (context, index) =>
-                            _buildRankCard(context, rankImages[index], index),
+                        (context, index) => _buildDivisionModule(context, rankImages[index], index),
                         childCount: rankImages.length,
                       ),
                     ),
@@ -80,12 +100,12 @@ class SelectRankScreen extends StatelessWidget {
                 },
               ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              const SliverToBoxAdapter(child: SizedBox(height: 48)),
 
               if (RemoteConfigService.isAdsShow)
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 24),
                     child: NativeAdsScreen(),
                   ),
                 ),
@@ -98,72 +118,100 @@ class SelectRankScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 400,
-          left: -80,
-          child: Opacity(
-            opacity: 0.05,
-            child: Icon(Icons.military_tech_rounded,
-                size: 400, color: DesignTokens.primary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildRankCard(BuildContext context, String image, int index) {
-    final accents = [
+  Widget _buildDivisionModule(BuildContext context, String image, int index) {
+    final colors = [
       DesignTokens.primary,
       DesignTokens.secondary,
-      const Color(0xFFFFD700),
       DesignTokens.accent,
+      const Color(0xFF00FF9D),
     ];
-    final accent = accents[index % accents.length];
+    final color = colors[index % colors.length];
 
-    return NeonCard(
+    return CyberPanel(
+      color: color,
       onTap: () => _handleSelection(context),
-      padding: const EdgeInsets.all(16),
-      borderColor: accent.withOpacity(0.15),
       child: Column(
         children: [
-          // Rank image area with glow
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  "RANK ${index + 1}",
+                  style: GoogleFonts.outfit(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                    letterSpacing: 1,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  "ACTIVE",
+                  style: GoogleFonts.outfit(fontSize: 7, fontWeight: FontWeight.w900, color: color),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: accent.withOpacity(0.04),
-                    borderRadius: BorderRadius.circular(20),
-                    border:
-                        Border.all(color: accent.withOpacity(0.12), width: 1.5),
-                  ),
+            child: Center(
+              child: GlowContainer(
+                glowColor: color,
+                blurRadius: 15,
+                child: Hero(
+                  tag: 'rank_img_$index',
+                  child: Image.asset(image, fit: BoxFit.contain),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: GlowContainer(
-                    glowColor: accent,
-                    blurRadius: 15,
-                    child: Hero(
-                      tag: 'rank_img_$index',
-                      child: Image.asset(image, fit: BoxFit.contain),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Select button
-          GradientButton(
-            text: "SELECT",
-            onPressed: () => _handleSelection(context),
-            color: accent,
-            height: 38,
+          const SizedBox(height: 12),
+          Text(
+            "LEVEL ${index + 1}",
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.textPrimary,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Center(
+              child: Text(
+                "SELECT",
+                style: GoogleFonts.outfit(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -178,3 +226,19 @@ class SelectRankScreen extends StatelessWidget {
         context, MaterialPageRoute(builder: (_) => ClaimScreen(model: model)));
   }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+

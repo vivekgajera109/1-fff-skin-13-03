@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/design_tokens.dart';
 
 class GradientButton extends StatefulWidget {
@@ -58,7 +59,7 @@ class _GradientButtonState extends State<GradientButton> with SingleTickerProvid
           height: widget.height,
           width: double.infinity,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+            borderRadius: BorderRadius.circular(DesignTokens.radiusM),
             gradient: LinearGradient(
               colors: widget.gradientColors ?? [DesignTokens.primary, DesignTokens.accent],
               begin: Alignment.topLeft,
@@ -66,8 +67,8 @@ class _GradientButtonState extends State<GradientButton> with SingleTickerProvid
             ),
             boxShadow: [
               BoxShadow(
-                color: (widget.gradientColors?.first ?? DesignTokens.primary).withOpacity(0.4),
-                blurRadius: 15,
+                color: (widget.gradientColors?.first ?? DesignTokens.primary).withOpacity(0.3),
+                blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
             ],
@@ -90,12 +91,12 @@ class _GradientButtonState extends State<GradientButton> with SingleTickerProvid
                         const SizedBox(width: DesignTokens.spacing8),
                       ],
                       Text(
-                        widget.text,
-                        style: const TextStyle(
+                        widget.text.toUpperCase(),
+                        style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ],

@@ -22,48 +22,62 @@ class NickNameScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
+              // Cyber Header
               CyberSliverAppBar(
-                title: "Identity Link",
+                title: "DNA Sequence",
                 expandedHeight: 200,
-                accentColor: DesignTokens.secondary,
+                accentColor: DesignTokens.primary,
                 backgroundExtras: [
                   Positioned(
-                    right: -30,
-                    bottom: -10,
+                    right: -20,
+                    top: 40,
                     child: Opacity(
                       opacity: 0.1,
-                      child: Icon(Icons.badge_rounded, size: 220, color: DesignTokens.secondary),
+                      child: Icon(Icons.biotech_rounded, size: 180, color: DesignTokens.primary),
                     ),
                   ),
                 ],
               ),
+
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                   child: Column(
                     children: [
-                      _buildCharacterBrief(),
-                      const SizedBox(height: 32),
-                      const GradientHeader(title: 'Identity Verification'),
-                      const SizedBox(height: 20),
-                      _buildUidInputCard(context),
-                      const SizedBox(height: 32),
+                      // Large Holographic character display
+                      _buildCharacterHologram(),
+                      
+                      const SizedBox(height: 56),
+
+                      // Radical Terminal Input
+                      _buildNeuralInput(context),
+
+                      const SizedBox(height: 40),
+
+                      // Verification Details
+                      _buildProtocolStatus(),
+
+                      const SizedBox(height: 48),
+                      
                       if (RemoteConfigService.isAdsShow) ...[
                         const NativeAdsScreen(),
                         const SizedBox(height: 32),
                       ],
+
+                      // Execution Action
                       GradientButton(
-                        text: "ESTABLISH UPLINK",
-                        icon: Icons.wifi_protected_setup_rounded,
+                        text: "AUTHORIZE UPLINK",
+                        icon: Icons.fingerprint_rounded,
                         onPressed: () => _onProceed(context),
-                        color: DesignTokens.secondary,
+                        color: DesignTokens.primary,
                       ),
+                      
                       const SizedBox(height: 100),
                     ],
                   ),
@@ -76,220 +90,175 @@ class NickNameScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(
+          painter: _HolographicGridPainter(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCharacterHologram() {
+    return Column(
       children: [
-        Positioned(
-          top: 300,
-          left: -100,
-          child: Opacity(
-            opacity: 0.05,
-            child: Icon(Icons.fingerprint_rounded, size: 400, color: DesignTokens.primary),
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            // Holographic Rings
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: DesignTokens.primary.withOpacity(0.1), width: 1),
+              ),
+            ),
+            Container(
+              width: 170,
+              height: 170,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: DesignTokens.primary.withOpacity(0.05), width: 1),
+              ),
+            ),
+            // The Character
+            GlowContainer(
+              glowColor: DesignTokens.primary,
+              blurRadius: 40,
+              child: Hero(
+                tag: 'character_${model.title}',
+                child: model.image != null 
+                    ? Image.asset(model.image!, height: 180, fit: BoxFit.contain)
+                    : const Icon(Icons.person_rounded, size: 100, color: DesignTokens.primary),
+              ),
+            ),
+            // Scan lines overlaying the character
+            Positioned(
+              top: 40,
+              child: Container(
+                width: 150,
+                height: 2,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(color: DesignTokens.primary.withOpacity(0.3), blurRadius: 10, spreadRadius: 1)
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text(
+          model.title.toUpperCase(),
+          style: GoogleFonts.outfit(
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: DesignTokens.textPrimary,
+            letterSpacing: 2,
+          ),
+        ),
+        Text(
+          "SUBJECT_ID: ALPHA-SYNC",
+          style: GoogleFonts.outfit(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: DesignTokens.primary,
+            letterSpacing: 4,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCharacterBrief() {
-    return NeonCard(
-      padding: const EdgeInsets.all(22),
-      borderColor: DesignTokens.primary.withOpacity(0.2),
-      child: Row(
-        children: [
-          // Character avatar with glow ring
-          GlowContainer(
-            glowColor: DesignTokens.primary,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: DesignTokens.surface,
-                border: Border.all(
-                  color: DesignTokens.primary.withOpacity(0.3),
-                  width: 2,
-                ),
-              ),
-              child: Center(
-                child: Hero(
-                  tag: 'character_${model.title}',
-                  child: model.image != null 
-                      ? Image.asset(model.image!, height: 60, fit: BoxFit.contain)
-                      : const Icon(Icons.person_rounded, size: 40, color: DesignTokens.textPrimary),
-                ),
-              ),
-            ),
+  Widget _buildNeuralInput(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "NEURAL SIGNATURE",
+          style: GoogleFonts.outfit(
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            color: DesignTokens.textSecondary,
+            letterSpacing: 3,
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: DesignTokens.primary,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(color: DesignTokens.primary.withOpacity(0.6), blurRadius: 6)
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        "PAYLOAD IDENTIFIED",
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: GoogleFonts.outfit(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: DesignTokens.primary,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  model.title.toUpperCase(),
-                  style: GoogleFonts.outfit(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: DesignTokens.textPrimary,
-                    letterSpacing: 0.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  "Synchronization protocol ready",
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    color: DesignTokens.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Icon(Icons.verified_rounded, color: DesignTokens.primary, size: 22),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUidInputCard(BuildContext context) {
-    return NeonCard(
-      padding: const EdgeInsets.all(28),
-      borderColor: DesignTokens.secondary.withOpacity(0.2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              GlowContainer(
-                glowColor: DesignTokens.secondary,
-                child: const Icon(Icons.fingerprint_rounded, color: DesignTokens.secondary, size: 30),
-              ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "NEURAL LINK",
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: DesignTokens.textPrimary,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    Text(
-                      "Verification Required",
-                      style: GoogleFonts.outfit(
-                        fontSize: 12,
-                        color: DesignTokens.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-
-          // UID Input field
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(DesignTokens.radiusS),
-              border: Border.all(color: DesignTokens.secondary.withOpacity(0.15)),
-            ),
+        ),
+        const SizedBox(height: 16),
+        CustomPaint(
+          painter: _TerminalInputPainter(color: DesignTokens.primary),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: TextField(
               controller: _controller,
               style: GoogleFonts.outfit(
                 color: DesignTokens.textPrimary,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-                fontSize: 16,
+                letterSpacing: 3,
+                fontSize: 18,
               ),
               decoration: InputDecoration(
-                hintText: "ENTER GAMING UID",
+                hintText: "INSERT_UID_TOKEN",
                 hintStyle: GoogleFonts.outfit(
-                  color: DesignTokens.textSecondary.withOpacity(0.3),
-                  letterSpacing: 1.5,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  color: DesignTokens.textSecondary.withOpacity(0.2),
+                  letterSpacing: 2,
+                  fontSize: 14,
                 ),
-                prefixIcon: const Icon(Icons.grid_3x3_rounded, color: DesignTokens.secondary, size: 18),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                prefixIcon: const Icon(Icons.terminal_rounded, color: DesignTokens.primary, size: 20),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+        ),
+      ],
+    );
+  }
 
-          // Info note
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: DesignTokens.secondary.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(DesignTokens.radiusS),
-              border: Border.all(color: DesignTokens.secondary.withOpacity(0.1)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.info_outline_rounded, color: DesignTokens.secondary, size: 14),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    "Your UID is essential for direct asset injection into your personal game vault cluster.",
-                    style: GoogleFonts.outfit(
-                      color: DesignTokens.textSecondary,
-                      fontSize: 11,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+  Widget _buildProtocolStatus() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: DesignTokens.surface.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: DesignTokens.primary.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          _buildStatusRow("BIO_VERIFICATION", "READY", DesignTokens.primary),
+          const SizedBox(height: 14),
+          _buildStatusRow("UPLINK_CHANNEL", "SECURE", DesignTokens.secondary),
+          const SizedBox(height: 14),
+          _buildStatusRow("ENCRYPTION", "AES-256", Colors.blueGrey),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatusRow(String label, String status, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.outfit(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: DesignTokens.textSecondary,
+            letterSpacing: 1.5,
+          ),
+        ),
+        Text(
+          status,
+          style: GoogleFonts.outfit(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: color,
+            letterSpacing: 1,
+          ),
+        ),
+      ],
     );
   }
 
@@ -301,6 +270,54 @@ class NickNameScreen extends StatelessWidget {
         context, MaterialPageRoute(builder: (_) => RankedScreen(model: model)));
   }
 }
+
+class _TerminalInputPainter extends CustomPainter {
+  final Color color;
+  _TerminalInputPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withOpacity(0.3)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+
+    final bracketSize = 15.0;
+
+    // Left Brackets
+    canvas.drawLine(const Offset(0, 0), Offset(bracketSize, 0), paint);
+    canvas.drawLine(const Offset(0, 0), Offset(0, size.height), paint);
+    canvas.drawLine(Offset(0, size.height), Offset(bracketSize, size.height), paint);
+
+    // Right Brackets
+    canvas.drawLine(Offset(size.width, 0), Offset(size.width - bracketSize, 0), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(size.width, size.height), paint);
+    canvas.drawLine(Offset(size.width, size.height), Offset(size.width - bracketSize, size.height), paint);
+
+    // Accent line
+    final accentPaint = Paint()..color = color..style = PaintingStyle.fill;
+    canvas.drawRect(Rect.fromLTWH(0, size.height / 2 - 5, 2, 10), accentPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _HolographicGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 50) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 50) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 
 

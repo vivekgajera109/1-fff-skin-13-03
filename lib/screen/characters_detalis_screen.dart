@@ -23,61 +23,60 @@ class CharactersDetalisScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Cyber Header with Character Image
+              // Cyber Header
               SliverAppBar(
-                expandedHeight: 480.0,
+                expandedHeight: 460.0,
                 pinned: true,
                 stretch: true,
                 backgroundColor: Colors.transparent,
                 automaticallyImplyLeading: false,
                 flexibleSpace: FlexibleSpaceBar(
-                  stretchModes: const [
-                    StretchMode.zoomBackground,
-                    StretchMode.blurBackground,
-                  ],
+                  stretchModes: const [StretchMode.zoomBackground],
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Atmospheric Background with radial glow
+                      // Atmospheric Background
                       Container(
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
                             center: const Alignment(0, -0.2),
                             radius: 1.0,
                             colors: [
-                              DesignTokens.primary.withOpacity(0.12),
+                              DesignTokens.primary.withOpacity(0.15),
                               DesignTokens.background,
                             ],
                           ),
                         ),
                       ),
 
-                      // Background text for added aesthetic
+                      // ID Badge Overlay
                       Positioned(
                         top: 140,
-                        right: -30,
+                        right: -20,
                         child: Opacity(
-                          opacity: 0.03,
-                          child: Text(
-                            "ELITE\nPROTOCOL",
-                            textAlign: TextAlign.right,
-                            style: GoogleFonts.outfit(
-                              fontSize: 100,
-                              fontWeight: FontWeight.w900,
-                              color: DesignTokens.primary,
-                              height: 0.9,
+                          opacity: 0.05,
+                          child: RotatedBox(
+                            quarterTurns: 1,
+                            child: Text(
+                              "OP_FILE_${characters.title.toUpperCase()}",
+                              style: GoogleFonts.outfit(
+                                fontSize: 60,
+                                fontWeight: FontWeight.w900,
+                                color: DesignTokens.primary,
+                                letterSpacing: 10,
+                              ),
                             ),
                           ),
                         ),
                       ),
 
-                      // Header Controls
+                      // Header Back Control
                       Positioned(
                         top: MediaQuery.of(context).padding.top + 10,
                         left: 20,
@@ -87,55 +86,27 @@ class CharactersDetalisScreen extends StatelessWidget {
                           size: 16,
                           onTap: () async {
                             await CommonOnTap.openUrl();
-                            await Future.delayed(const Duration(milliseconds: 400));
+                            await Future.delayed(
+                                const Duration(milliseconds: 400));
                             if (context.mounted) Navigator.pop(context);
                           },
                         ),
                       ),
 
-                      // Character Image with enhanced glow
+                      // Character Image
                       Positioned(
                         top: 100,
-                        bottom: 60,
+                        bottom: 40,
                         left: 20,
                         right: 20,
                         child: Hero(
                           tag: 'character_${characters.title}',
-                          child: Container(
-                            decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: DesignTokens.primary.withOpacity(0.18),
-                                  blurRadius: 120,
-                                  spreadRadius: -40,
-                                ),
-                              ],
-                            ),
-                            child: characters.image != null 
-                                ? Image.asset(characters.image!, fit: BoxFit.contain)
-                                : Icon(Icons.person_rounded, size: 220, color: DesignTokens.primary.withOpacity(0.4)),
-                          ),
-                        ),
-                      ),
-
-                      // Bottom Gradient Fade
-                      Positioned(
-                        bottom: -1,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 160,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                DesignTokens.background.withOpacity(0),
-                                DesignTokens.background.withOpacity(0.6),
-                                DesignTokens.background,
-                              ],
-                            ),
-                          ),
+                          child: characters.image != null
+                              ? Image.asset(characters.image!,
+                                  fit: BoxFit.contain)
+                              : Icon(Icons.person_rounded,
+                                  size: 220,
+                                  color: DesignTokens.primary.withOpacity(0.4)),
                         ),
                       ),
                     ],
@@ -143,30 +114,29 @@ class CharactersDetalisScreen extends StatelessWidget {
                 ),
               ),
 
-              // Content Sections
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTitleSection(),
+                      _buildProfileHeader(),
                       const SizedBox(height: 40),
-
                       if (RemoteConfigService.isAdsShow) ...[
                         const BanerAdsScreen(),
                         const SizedBox(height: 36),
                       ],
-
-                      _buildStatsGrid(),
+                      _buildOperationalMatrix(),
                       const SizedBox(height: 40),
-
                       if (RemoteConfigService.isAdsShow) ...[
                         const NativeAdsScreen(),
-                        const SizedBox(height: 36),
+                        const SizedBox(height: 40),
                       ],
-
-                      _buildActionArea(context),
+                      _buildDeploymentTerminal(context),
+                      if (RemoteConfigService.isAdsShow) ...[
+                        const SizedBox(height: 32),
+                        const BanerAdsScreen(),
+                      ],
                       const SizedBox(height: 120),
                     ],
                   ),
@@ -179,123 +149,112 @@ class CharactersDetalisScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 500,
-          left: -100,
-          child: Opacity(
-            opacity: 0.05,
-            child: Icon(Icons.hub_rounded, size: 400, color: DesignTokens.primary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildTitleSection() {
+  Widget _buildProfileHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: DesignTokens.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: DesignTokens.primary.withOpacity(0.2)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: DesignTokens.primary,
-                  shape: BoxShape.circle,
-                ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: DesignTokens.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+                border:
+                    Border.all(color: DesignTokens.primary.withOpacity(0.3)),
               ),
-              const SizedBox(width: 8),
-              Text(
-                "VERIFIED ARCHIVE",
+              child: Text(
+                "ONLINE",
                 style: GoogleFonts.outfit(
-                  fontSize: 10,
+                  fontSize: 8,
                   fontWeight: FontWeight.w900,
                   color: DesignTokens.primary,
-                  letterSpacing: 2.0,
+                  letterSpacing: 2,
                 ),
               ),
-            ],
+            ),
+            const SizedBox(width: 12),
+            Text(
+              "SYNCED // ARCHIVE:097",
+              style: GoogleFonts.outfit(
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+                color: DesignTokens.textSecondary,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Text(
+          characters.title.toUpperCase(),
+          style: GoogleFonts.outfit(
+            fontSize: 48,
+            fontWeight: FontWeight.w900,
+            color: DesignTokens.textPrimary,
+            height: 0.9,
+            letterSpacing: -2,
           ),
         ),
         const SizedBox(height: 24),
         Text(
-          characters.title.toUpperCase(),
-          style: GoogleFonts.outfit(
-            fontSize: 44,
-            fontWeight: FontWeight.w900,
-            color: DesignTokens.textPrimary,
-            height: 1.0,
-            letterSpacing: -1.5,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
           characters.description ??
-              "High-fidelity operator profile retrieved from secure server protocols. Optimized for tactical field deployment and visual excellence in elite gaming environments.",
+              "Neural cluster data retrieved for high-tier operator. System integrity verified for immediate deployment protocols.",
           style: GoogleFonts.outfit(
-            fontSize: 16,
+            fontSize: 15,
             color: DesignTokens.textSecondary,
-            height: 1.7,
-            fontWeight: FontWeight.w400,
+            height: 1.6,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildOperationalMatrix() {
     return Row(
       children: [
-        _buildStatItem("LEVEL", "MAX", Icons.auto_awesome_rounded, DesignTokens.primary),
-        const SizedBox(width: 14),
-        _buildStatItem("TIER", "ELITE", Icons.military_tech_rounded, DesignTokens.secondary),
-        const SizedBox(width: 14),
-        _buildStatItem("SYNC", "100%", Icons.sync_rounded, DesignTokens.accent),
+        _buildMatrixNode("POWER", "MAX", DesignTokens.primary),
+        const SizedBox(width: 16),
+        _buildMatrixNode("ELITE", "RANK", DesignTokens.secondary),
+        const SizedBox(width: 16),
+        _buildMatrixNode("GRID", "ACTIVE", DesignTokens.accent),
       ],
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildMatrixNode(String label, String value, Color color) {
     return Expanded(
-      child: NeonCard(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        borderColor: color.withOpacity(0.15),
+      child: CyberPanel(
+        color: color,
         child: Column(
           children: [
-            GlowContainer(
-              glowColor: color,
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 14),
             Text(
               value,
               style: GoogleFonts.outfit(
-                fontSize: 18,
+                textStyle: TextStyle(overflow: TextOverflow.ellipsis),
+                fontSize: 15,
                 fontWeight: FontWeight.w900,
                 color: DesignTokens.textPrimary,
-                letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: GoogleFonts.outfit(
-                fontSize: 9,
-                color: DesignTokens.textSecondary,
+                fontSize: 8,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
+                color: color,
+                letterSpacing: 2,
               ),
             ),
           ],
@@ -304,55 +263,45 @@ class CharactersDetalisScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionArea(BuildContext context) {
-    return NeonCard(
-      padding: const EdgeInsets.all(28),
-      borderColor: DesignTokens.secondary.withOpacity(0.2),
+  Widget _buildDeploymentTerminal(BuildContext context) {
+    return CyberPanel(
+      color: DesignTokens.secondary,
       child: Column(
         children: [
           Row(
             children: [
               GlowContainer(
                 glowColor: DesignTokens.secondary,
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: DesignTokens.secondary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.bolt_rounded, color: DesignTokens.secondary, size: 28),
-                ),
+                child: const Icon(Icons.bolt_rounded,
+                    color: DesignTokens.secondary, size: 24),
               ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Data Extraction",
-                      style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: DesignTokens.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "DEPLOYMENT_GATEWAY",
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: DesignTokens.textPrimary,
                     ),
-                    Text(
-                      "Initialize remote link protocol",
-                      style: GoogleFonts.outfit(
-                        fontSize: 13,
-                        color: DesignTokens.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  ),
+                  Text(
+                    "STATUS: READY_FOR_UPLINK",
+                    style: GoogleFonts.outfit(
+                      fontSize: 9,
+                      color: DesignTokens.secondary,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
           const SizedBox(height: 32),
           GradientButton(
-            text: "INITIALIZE DEPLOYMENT",
+            text: "INITIALIZE UPLINK",
             icon: Icons.rocket_launch_rounded,
             onPressed: () => _onClaim(context),
             color: DesignTokens.secondary,
@@ -373,6 +322,20 @@ class CharactersDetalisScreen extends StatelessWidget {
   }
 }
 
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
 
-
-
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

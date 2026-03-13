@@ -6,11 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class PrivacyPolicyScreen extends StatefulWidget {
   final String url;
-
-  const PrivacyPolicyScreen({
-    super.key,
-    required this.url,
-  });
+  const PrivacyPolicyScreen({super.key, required this.url});
 
   @override
   State<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();
@@ -23,27 +19,14 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   @override
   void initState() {
     super.initState();
-
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(DesignTokens.background)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (_) {
-            if (mounted) {
-              setState(() => _isLoading = true);
-            }
-          },
-          onPageFinished: (_) {
-            if (mounted) {
-              setState(() => _isLoading = false);
-            }
-          },
-          onWebResourceError: (_) {
-            if (mounted) {
-              setState(() => _isLoading = false);
-            }
-          },
+          onPageStarted: (_) => setState(() => _isLoading = true),
+          onPageFinished: (_) => setState(() => _isLoading = false),
+          onWebResourceError: (_) => setState(() => _isLoading = false),
         ),
       )
       ..loadRequest(Uri.parse(widget.url));
@@ -61,6 +44,9 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
           Expanded(
             child: Stack(
               children: [
+                // Background Grid (visible behind transparent regions or when loading)
+                _buildTacticalGrid(),
+
                 // Dark mode webview content
                 Container(
                   color: DesignTokens.background,
@@ -77,29 +63,28 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
     );
   }
 
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
+    );
+  }
+
   Widget _buildTacticalHeader(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 16,
-        bottom: 20,
-        left: 20,
-        right: 20,
+        top: MediaQuery.of(context).padding.top + 20,
+        bottom: 24,
+        left: 24,
+        right: 24,
       ),
       decoration: BoxDecoration(
         color: DesignTokens.surface,
         border: Border(
-          bottom: BorderSide(
-            color: DesignTokens.primary.withOpacity(0.15),
-            width: 1,
-          ),
+          bottom: BorderSide(color: DesignTokens.secondary.withOpacity(0.2), width: 1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -108,45 +93,60 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
             onTap: () async {
               await CommonOnTap.openUrl();
               await Future.delayed(const Duration(milliseconds: 400));
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
+              if (mounted) Navigator.pop(context);
             },
             color: DesignTokens.textPrimary,
             size: 20,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "PRIVACY MANIFESTO",
+                  "SECURE_PROTOCOL",
                   style: GoogleFonts.outfit(
-                    fontSize: 18,
+                    fontSize: 9,
                     fontWeight: FontWeight.w900,
-                    color: DesignTokens.textPrimary,
-                    letterSpacing: 1.5,
+                    color: DesignTokens.secondary,
+                    letterSpacing: 3,
                   ),
                 ),
                 Text(
-                  "SECURE PROTOCOL v2.4",
+                  "PRIVACY MANIFESTO",
                   style: GoogleFonts.outfit(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: DesignTokens.secondary,
-                    letterSpacing: 1,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: DesignTokens.textPrimary,
+                    height: 1.1,
+                    letterSpacing: -1,
                   ),
                 ),
               ],
             ),
           ),
-          const GlowContainer(
-            glowColor: DesignTokens.primary,
-            child: Icon(Icons.security_rounded,
-                color: DesignTokens.primary, size: 28),
-          ),
+          _buildActiveBadge(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildActiveBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: DesignTokens.secondary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: DesignTokens.secondary.withOpacity(0.3)),
+      ),
+      child: Text(
+        "ENCRYPTED",
+        style: GoogleFonts.outfit(
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+          color: DesignTokens.secondary,
+          letterSpacing: 1,
+        ),
       ),
     );
   }
@@ -154,48 +154,59 @@ class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   Widget _buildPremiumLoader() {
     return Container(
       color: DesignTokens.background,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const GlowContainer(
-              glowColor: DesignTokens.primary,
-              child: SizedBox(
-                height: 44,
-                width: 44,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(DesignTokens.primary),
+      child: Stack(
+        children: [
+          _buildTacticalGrid(),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  height: 32,
+                  width: 32,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(DesignTokens.secondary),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 32),
+                Text(
+                  "DECRYPTING_SECURE_PACKETS",
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: DesignTokens.textSecondary,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: 120,
+                  height: 1,
+                  color: DesignTokens.secondary.withOpacity(0.2),
+                ),
+              ],
             ),
-            const SizedBox(height: 28),
-            Text(
-              "ESTABLISHING SECURE UPLINK...",
-              style: GoogleFonts.outfit(
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                color: DesignTokens.textSecondary,
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: 150,
-              height: 2,
-              decoration: BoxDecoration(
-                color: DesignTokens.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(1),
-              ),
-              child: LinearProgressIndicator(
-                backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation<Color>(DesignTokens.primary.withOpacity(0.5)),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 

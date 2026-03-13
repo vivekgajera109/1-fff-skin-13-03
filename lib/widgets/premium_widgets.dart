@@ -36,13 +36,7 @@ class GradientButton extends StatelessWidget {
       width: double.infinity,
       height: height,
       decoration: BoxDecoration(
-        gradient: isSecondary
-            ? null
-            : LinearGradient(
-                colors: [baseColor, DesignTokens.secondary],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
+        gradient: isSecondary ? null : DesignTokens.primaryGradient,
         color: isSecondary ? baseColor.withOpacity(0.08) : null,
         borderRadius: BorderRadius.circular(DesignTokens.radiusM),
         border: Border.all(
@@ -53,9 +47,14 @@ class GradientButton extends StatelessWidget {
             ? null
             : [
                 BoxShadow(
-                  color: baseColor.withOpacity(0.35),
+                  color: DesignTokens.primary.withOpacity(0.3),
                   blurRadius: 20,
-                  offset: const Offset(0, 6),
+                  offset: const Offset(0, 8),
+                ),
+                BoxShadow(
+                  color: DesignTokens.accent.withOpacity(0.2),
+                  blurRadius: 15,
+                  spreadRadius: -2,
                 ),
               ],
       ),
@@ -618,7 +617,7 @@ class CyberSliverAppBar extends StatelessWidget {
           title.toUpperCase(),
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.w900,
-            fontSize: 14,
+            fontSize: 12,
             letterSpacing: 3,
             color: DesignTokens.textPrimary,
           ),
@@ -771,3 +770,140 @@ class PageWrapper extends StatelessWidget {
   }
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CyberPanel — stylized panel with angular border and tech accents
+// ─────────────────────────────────────────────────────────────────────────────
+class CyberPanel extends StatelessWidget {
+  final Widget child;
+  final Color? color;
+  final double? height;
+  final VoidCallback? onTap;
+
+  const CyberPanel({
+    super.key,
+    required this.child,
+    this.color,
+    this.height,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = color ?? DesignTokens.primary;
+    return GestureDetector(
+      onTap: onTap,
+      child: CustomPaint(
+        painter: _CyberPanelPainter(color: accent),
+        child: Container(
+          height: height,
+          padding: const EdgeInsets.all(24),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+class _CyberPanelPainter extends CustomPainter {
+  final Color color;
+  _CyberPanelPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = DesignTokens.card
+      ..style = PaintingStyle.fill;
+
+    final borderPaint = Paint()
+      ..color = color.withOpacity(0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    final path = Path();
+    double notch = 20.0;
+
+    path.moveTo(0, notch);
+    path.lineTo(notch, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width, size.height - notch);
+    path.lineTo(size.width - notch, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    // Shadow
+    canvas.drawPath(path.shift(const Offset(0, 6)), Paint()..color = Colors.black.withOpacity(0.3)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12));
+    
+    canvas.drawPath(path, paint);
+    canvas.drawPath(path, borderPaint);
+
+    // Tech accents
+    final accentPaint = Paint()..color = color..style = PaintingStyle.fill;
+    canvas.drawRect(Rect.fromLTWH(size.width - 2, notch + 5, 2, 30), accentPaint);
+    canvas.drawRect(Rect.fromLTWH(notch + 5, 0, 30, 2), accentPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CyberHeader — Immersive dashboard header
+// ─────────────────────────────────────────────────────────────────────────────
+class CyberHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  const CyberHeader({super.key, required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 2,
+                      color: DesignTokens.secondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      subtitle.toUpperCase(),
+                      style: GoogleFonts.outfit(
+                        color: DesignTokens.secondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 3.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    color: DesignTokens.textPrimary,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GlowIconButton(
+            icon: Icons.notifications_none_rounded,
+            color: DesignTokens.textSecondary,
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}

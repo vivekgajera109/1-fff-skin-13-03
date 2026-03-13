@@ -11,7 +11,6 @@ import 'select_rank_screen.dart';
 
 class LevelIdScreen extends StatelessWidget {
   final HomeItemModel model;
-
   const LevelIdScreen({super.key, required this.model});
 
   @override
@@ -20,77 +19,100 @@ class LevelIdScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Cyber header with character silhouette
               CyberSliverAppBar(
-                title: "Progression Level",
-                expandedHeight: 240,
-                accentColor: DesignTokens.secondary,
+                title: "Select Level",
+                expandedHeight: 220,
+                accentColor: DesignTokens.primary,
                 backgroundExtras: [
                   Positioned(
-                    left: -30,
-                    bottom: -20,
+                    right: -20,
+                    top: 20,
                     child: Opacity(
-                      opacity: 0.12,
-                      child: Hero(
-                        tag: 'character_lvl_bg_${model.title}',
-                        child: model.image != null 
-                            ? Image.asset(model.image!, height: 300, fit: BoxFit.contain)
-                            : Icon(Icons.person_rounded, size: 200, color: DesignTokens.primary),
-                      ),
+                      opacity: 0.1,
+                      child: Icon(Icons.hub_rounded,
+                          size: 220, color: DesignTokens.primary),
                     ),
                   ),
                 ],
               ),
-
-              // Section header
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 32, 24, 24),
-                  child: GradientHeader(
-                    title: 'Account Maturity',
-                    accentColor: DesignTokens.secondary,
-                    fontSize: 13,
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "LEVELS",
+                            style: GoogleFonts.outfit(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: DesignTokens.primary,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Choose your current level",
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              color: DesignTokens.textSecondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      _buildStatusIndicator(),
+                    ],
                   ),
                 ),
               ),
-
-              // Level list
+              if (RemoteConfigService.isAdsShow)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: BanerAdsScreen(),
+                  ),
+                ),
               Consumer<HomeProvider>(
                 builder: (context, provider, _) {
                   final levels = provider.levelId;
                   return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverList(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 18,
+                        crossAxisSpacing: 18,
+                        childAspectRatio: 0.8,
+                      ),
                       delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final level = levels[index];
-                          bool showNativeAd = RemoteConfigService.isAdsShow &&
-                              (index != 0 && index % 3 == 0);
-                          return Column(
-                            children: [
-                              _buildLevelCard(context, level, index),
-                              if (showNativeAd) ...[
-                                const SizedBox(height: 24),
-                                const NativeAdsScreen(),
-                                const SizedBox(height: 24),
-                              ] else
-                                const SizedBox(height: 16),
-                            ],
-                          );
-                        },
+                        (context, index) =>
+                            _buildStabilityNode(context, levels[index], index),
                         childCount: levels.length,
                       ),
                     ),
                   );
                 },
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              if (RemoteConfigService.isAdsShow)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                    child: NativeAdsScreen(),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
           ),
         ],
@@ -98,96 +120,137 @@ class LevelIdScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          bottom: 100,
-          right: -60,
-          child: Opacity(
-            opacity: 0.04,
-            child: Icon(Icons.analytics_rounded, size: 350, color: DesignTokens.secondary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildLevelCard(BuildContext context, String level, int index) {
-    final color = _getLevelColor(index);
-    return NeonCard(
+  Widget _buildStatusIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: DesignTokens.primary.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: DesignTokens.primary.withOpacity(0.3)),
+      ),
+      child: Text(
+        "ACTIVE",
+        style: GoogleFonts.outfit(
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+          color: DesignTokens.primary,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStabilityNode(BuildContext context, String level, int index) {
+    final colors = [
+      DesignTokens.primary,
+      DesignTokens.secondary,
+      DesignTokens.accent,
+      const Color(0xFF00FF9D),
+    ];
+    final color = colors[index % colors.length];
+    final progress = 0.95 - (index * 0.08);
+
+    return CyberPanel(
+      color: color,
       onTap: () => _handleSelection(context),
-      padding: const EdgeInsets.all(20),
-      borderColor: color.withOpacity(0.15),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Level icon/number
-          GlowContainer(
-            glowColor: color,
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.35), width: 1.5),
-              ),
-              child: Center(
-                child: Text(
-                  (index + 1).toString(),
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 22,
-                    color: color,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "ID: ${index + 1}",
+                style: GoogleFonts.outfit(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: color,
                 ),
               ),
+              Icon(Icons.bolt_rounded, color: color, size: 10),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            level,
+            style: GoogleFonts.outfit(
+              fontSize: 40,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.textPrimary,
+              height: 0.8,
+              letterSpacing: -2,
             ),
           ),
-          const SizedBox(width: 20),
-
-          // Level info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "LEVEL $level",
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                    color: DesignTokens.textPrimary,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  "Synchronizing profile maturity...",
-                  style: GoogleFonts.outfit(
-                    color: DesignTokens.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 4),
+          Text(
+            "EXPERIENCE",
+            style: GoogleFonts.outfit(
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: color.withOpacity(0.8),
+              letterSpacing: 1,
             ),
           ),
-
-          // Arrow
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.chevron_right_rounded,
-              color: color,
-              size: 20,
-            ),
-          ),
+          const Spacer(),
+          _buildStabilityBar(color, progress),
         ],
       ),
+    );
+  }
+
+  Widget _buildStabilityBar(Color color, double progress) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "PROGRESS",
+              style: GoogleFonts.outfit(
+                  fontSize: 7,
+                  fontWeight: FontWeight.bold,
+                  color: DesignTokens.textSecondary),
+            ),
+            Text(
+              "${(progress * 100).toInt()}%",
+              style: GoogleFonts.outfit(
+                  fontSize: 7, fontWeight: FontWeight.w900, color: color),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 2,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white12,
+            borderRadius: BorderRadius.circular(1),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: progress,
+            child: Container(
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(1),
+                boxShadow: [
+                  BoxShadow(color: color.withOpacity(0.5), blurRadius: 4),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -198,18 +261,22 @@ class LevelIdScreen extends StatelessWidget {
     Navigator.push(context,
         MaterialPageRoute(builder: (_) => SelectRankScreen(model: model)));
   }
-
-  Color _getLevelColor(int index) {
-    const palette = [
-      DesignTokens.primary,
-      DesignTokens.secondary,
-      DesignTokens.accent,
-      Color(0xFF00FF9D),
-      Color(0xFF7B2FFF),
-    ];
-    return palette[index % palette.length];
-  }
 }
 
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
 
-
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

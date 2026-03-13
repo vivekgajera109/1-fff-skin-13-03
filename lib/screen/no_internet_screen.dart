@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../theme/design_tokens.dart';
 import '../widgets/premium_widgets.dart';
+import '../common/Ads/ads_card.dart';
+import '../helper/remote_config_service.dart';
 
 class NoInternetScreen extends StatefulWidget {
   const NoInternetScreen({super.key});
@@ -11,8 +13,24 @@ class NoInternetScreen extends StatefulWidget {
   State<NoInternetScreen> createState() => _NoInternetScreenState();
 }
 
-class _NoInternetScreenState extends State<NoInternetScreen> {
+class _NoInternetScreenState extends State<NoInternetScreen> with TickerProviderStateMixin {
   bool _checking = false;
+  late final AnimationController _scanCtrl;
+  late final AnimationController _glowCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _scanCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+    _glowCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _scanCtrl.dispose();
+    _glowCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _retryConnection() async {
     if (_checking) return;
@@ -41,42 +59,43 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Atmospheric Background Elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
+
+          // Scanning Line
+          _buildScanningLine(),
 
           SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Critical Error Indicator
-                    _buildErrorIndicator(),
-
-                    const SizedBox(height: 50),
-
-                    // Error Message Card
-                    _buildErrorMessage(),
-
-                    const SizedBox(height: 50),
-
-                    // Action Section
-                    _buildActionSection(),
-
-                    const SizedBox(height: 48),
-
-                    Text(
-                      "TERMINAL STATUS: DISCONNECTED",
-                      style: GoogleFonts.outfit(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: DesignTokens.accent.withOpacity(0.4),
-                        letterSpacing: 3.5,
-                      ),
-                    ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
+                  _buildStatusHeader(),
+                  const Spacer(),
+                  
+                  // Central Error Module
+                  _buildSignalErrorModule(),
+                  
+                  const SizedBox(height: 60),
+                  
+                  // Message Panel
+                  _buildErrorPanel(),
+                  
+                  if (RemoteConfigService.isAdsShow) ...[
+                    const SizedBox(height: 24),
+                    const BanerAdsScreen(),
                   ],
-                ),
+
+                  const Spacer(),
+                  
+                  // Action Area
+                  _buildActionArea(),
+                  
+                  const SizedBox(height: 40),
+                  _buildTerminalFooter(),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           ),
@@ -85,89 +104,148 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -150,
-          right: -100,
-          child: Opacity(
-            opacity: 0.08,
-            child: Icon(Icons.wifi_off_rounded,
-                size: 450, color: DesignTokens.accent),
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
+    );
+  }
+
+  Widget _buildScanningLine() {
+    return AnimatedBuilder(
+      animation: _scanCtrl,
+      builder: (context, child) {
+        return Positioned(
+          top: MediaQuery.of(context).size.height * _scanCtrl.value,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  DesignTokens.accent.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+              ),
+            ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatusHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "NO INTERNET",
+              style: GoogleFonts.outfit(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: DesignTokens.accent,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Container(width: 40, height: 2, color: DesignTokens.accent.withOpacity(0.3)),
+          ],
         ),
-        Positioned(
-          bottom: -100,
-          left: -80,
-          child: Opacity(
-            opacity: 0.05,
-            child: Icon(Icons.radar_rounded,
-                size: 350, color: DesignTokens.primary),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: DesignTokens.accent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: DesignTokens.accent.withOpacity(0.3)),
+          ),
+          child: Text(
+            "OFFLINE",
+            style: GoogleFonts.outfit(
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.accent,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildErrorIndicator() {
-    return GlowContainer(
-      glowColor: DesignTokens.accent,
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: DesignTokens.accent.withOpacity(0.08),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: DesignTokens.accent.withOpacity(0.25),
-            width: 1.5,
-          ),
-        ),
-        child: const Icon(
-          Icons.signal_wifi_connected_no_internet_4_rounded,
-          size: 72,
-          color: DesignTokens.accent,
-        ),
-      ),
+  Widget _buildSignalErrorModule() {
+    return AnimatedBuilder(
+      animation: _glowCtrl,
+      builder: (context, child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: DesignTokens.accent.withOpacity(0.05 + (_glowCtrl.value * 0.05))),
+              ),
+            ),
+            // Brackets
+            SizedBox(
+              width: 180,
+              height: 180,
+              child: CustomPaint(painter: _ModuleBracketsPainter(color: DesignTokens.accent)),
+            ),
+            GlowContainer(
+              glowColor: DesignTokens.accent,
+              blurRadius: 30 + (_glowCtrl.value * 30),
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: DesignTokens.accent.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: DesignTokens.accent.withOpacity(0.3), width: 2),
+                ),
+                child: Icon(
+                  Icons.wifi_off_rounded,
+                  size: 60,
+                  color: DesignTokens.accent.withOpacity(0.8 + (_glowCtrl.value * 0.2)),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildErrorMessage() {
-    return NeonCard(
-      padding: const EdgeInsets.all(32),
-      borderColor: DesignTokens.accent.withOpacity(0.15),
+  Widget _buildErrorPanel() {
+    return CyberPanel(
+      color: DesignTokens.accent,
       child: Column(
         children: [
           Text(
-            "CONNECTION FAILED",
-            textAlign: TextAlign.center,
+            "CONNECTION LOST",
             style: GoogleFonts.outfit(
-              fontSize: 26,
+              fontSize: 18,
               fontWeight: FontWeight.w900,
               color: DesignTokens.textPrimary,
-              letterSpacing: 2.0,
+              letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 16),
-          Container(
-            height: 2,
-            width: 80,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [DesignTokens.accent, DesignTokens.accent.withOpacity(0)],
-              ),
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
           Text(
-            "The secure data stream has been interrupted. Restore network protocols to re-establish secure terminal access.",
+            "Please check your internet connection and try again to restore access.",
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
-              fontSize: 15,
+              fontSize: 14,
               color: DesignTokens.textSecondary,
-              height: 1.7,
-              fontWeight: FontWeight.w400,
+              height: 1.5,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -175,49 +253,46 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
     );
   }
 
-  Widget _buildActionSection() {
+  Widget _buildActionArea() {
     if (_checking) {
       return Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            decoration: BoxDecoration(
-              color: DesignTokens.primary.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: DesignTokens.primary.withOpacity(0.2)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(DesignTokens.primary),
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(DesignTokens.primary),
                 ),
-                const SizedBox(width: 16),
-                Text(
-                  "RESTORING SIGNAL...",
-                  style: GoogleFonts.outfit(
-                    color: DesignTokens.primary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                "RETRYING...",
+                style: GoogleFonts.outfit(
+                  color: DesignTokens.primary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: 200,
-            height: 3,
+          const SizedBox(height: 24),
+          Container(
+            width: double.infinity,
+            height: 4,
+            decoration: BoxDecoration(
+              color: DesignTokens.surface,
+              borderRadius: BorderRadius.circular(2),
+              border: Border.all(color: DesignTokens.primary.withOpacity(0.1)),
+            ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(1.5),
+              borderRadius: BorderRadius.circular(2),
               child: LinearProgressIndicator(
-                backgroundColor: DesignTokens.primary.withOpacity(0.05),
+                backgroundColor: Colors.transparent,
                 valueColor: const AlwaysStoppedAnimation<Color>(DesignTokens.primary),
               ),
             ),
@@ -225,16 +300,70 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
         ],
       );
     } else {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: GradientButton(
-          text: "REBOOT CONNECTION",
-          icon: Icons.refresh_rounded,
-          onPressed: _retryConnection,
-        ),
+      return GradientButton(
+        text: "TRY AGAIN",
+        icon: Icons.refresh_rounded,
+        onPressed: _retryConnection,
+        color: DesignTokens.accent,
       );
     }
   }
+
+  Widget _buildTerminalFooter() {
+    return Text(
+      "STATUS: DISCONNECTED",
+      style: GoogleFonts.outfit(
+        fontSize: 8,
+        fontWeight: FontWeight.bold,
+        color: DesignTokens.textSecondary.withOpacity(0.4),
+        letterSpacing: 1.5,
+      ),
+    );
+  }
+}
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ModuleBracketsPainter extends CustomPainter {
+  final Color color;
+  _ModuleBracketsPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withOpacity(0.3)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    
+    double len = 20;
+    // TL
+    canvas.drawLine(const Offset(0, 0), Offset(len, 0), paint);
+    canvas.drawLine(const Offset(0, 0), Offset(0, len), paint);
+    // TR
+    canvas.drawLine(Offset(size.width, 0), Offset(size.width - len, 0), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(size.width, len), paint);
+    // BL
+    canvas.drawLine(Offset(0, size.height), Offset(len, size.height), paint);
+    canvas.drawLine(Offset(0, size.height), Offset(0, size.height - len), paint);
+    // BR
+    canvas.drawLine(Offset(size.width, size.height), Offset(size.width - len, size.height), paint);
+    canvas.drawLine(Offset(size.width, size.height), Offset(size.width, size.height - len), paint);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 

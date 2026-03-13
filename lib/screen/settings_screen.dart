@@ -17,30 +17,30 @@ class SettingScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               CyberSliverAppBar(
                 title: "Settings",
-                expandedHeight: 200,
+                expandedHeight: 220,
                 accentColor: DesignTokens.secondary,
                 backgroundExtras: [
                   Positioned(
                     right: -20,
-                    top: 40,
+                    top: 20,
                     child: Opacity(
                       opacity: 0.1,
-                      child: Icon(Icons.settings_suggest_rounded, size: 180, color: DesignTokens.secondary),
+                      child: Icon(Icons.settings_suggest_rounded, size: 220, color: DesignTokens.secondary),
                     ),
                   ),
                 ],
               ),
 
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     if (RemoteConfigService.isAdsShow) ...[
@@ -48,40 +48,36 @@ class SettingScreen extends StatelessWidget {
                       const SizedBox(height: 32),
                     ],
 
-                    // App Ecosystem
-                    const GradientHeader(
-                      title: 'System Interface',
-                      fontSize: 13,
-                    ),
+                    _buildSectionHeader("APP OPTIONS"),
                     const SizedBox(height: 24),
-                    _buildSettingTile(
+                    _buildConfigBlock(
+                      id: "SHARE",
                       icon: Icons.share_rounded,
-                      title: "Relay Node",
-                      subtitle: "Broadcast to gaming network",
-                      accentColor: DesignTokens.primary,
+                      title: "SHARE APP",
+                      subtitle: "Tell your friends about us",
+                      color: DesignTokens.primary,
                       onTap: _shareApp,
                     ),
                     const SizedBox(height: 16),
-                    _buildSettingTile(
+                    _buildConfigBlock(
+                      id: "RATE",
                       icon: Icons.star_rounded,
-                      title: "System Rating",
-                      subtitle: "Evaluate core performance",
-                      accentColor: const Color(0xFFFFD700),
+                      title: "RATE APP",
+                      subtitle: "Give us a 5-star rating",
+                      color: const Color(0xFFFFD700),
                       onTap: _openAppUrl,
                     ),
-                    const SizedBox(height: 40),
+                    
+                    const SizedBox(height: 48),
 
-                    // Security Protocols
-                    const GradientHeader(
-                      title: 'Security Matrix',
-                      fontSize: 13,
-                    ),
+                    _buildSectionHeader("POLICY"),
                     const SizedBox(height: 24),
-                    _buildSettingTile(
+                    _buildConfigBlock(
+                      id: "PRIVACY",
                       icon: Icons.shield_rounded,
-                      title: "Privacy Manifesto",
-                      subtitle: "Encrypted data management",
-                      accentColor: DesignTokens.secondary,
+                      title: "PRIVACY POLICY",
+                      subtitle: "Read our privacy policy",
+                      color: DesignTokens.secondary,
                       onTap: () async {
                         final url = RemoteConfigService.getPrivacyPolicyUrl();
                         await CommonOnTap.openUrl();
@@ -93,13 +89,16 @@ class SettingScreen extends StatelessWidget {
                                 builder: (_) => PrivacyPolicyScreen(url: url)));
                       },
                     ),
+                    
+                    if (RemoteConfigService.isAdsShow) ...[
+                      const SizedBox(height: 32),
+                      const BanerAdsScreen(),
+                    ],
+
                     const SizedBox(height: 60),
                     
-                    // Version Info
-                    Center(
-                      child: _buildVersionBadge(),
-                    ),
-                    const SizedBox(height: 100),
+                    Center(child: _buildTacticalVersionBadge()),
+                    const SizedBox(height: 120),
                   ]),
                 ),
               ),
@@ -110,82 +109,77 @@ class SettingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Positioned(
-          bottom: 200,
-          left: -80,
-          child: Opacity(
-            opacity: 0.05,
-            child: Icon(Icons.security_rounded, size: 300, color: DesignTokens.secondary),
+        Text(
+          title,
+          style: GoogleFonts.outfit(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: DesignTokens.secondary,
+            letterSpacing: 4,
           ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 1,
+          width: 40,
+          color: DesignTokens.secondary.withOpacity(0.3),
         ),
       ],
     );
   }
 
-  Widget _buildVersionBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: DesignTokens.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: DesignTokens.divider),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: DesignTokens.secondary,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: DesignTokens.secondary, blurRadius: 6)
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            "STABLE BUILD 1.0.4",
-            style: GoogleFonts.outfit(
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              color: DesignTokens.textSecondary,
-              letterSpacing: 2.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingTile({
+  Widget _buildConfigBlock({
+    required String id,
     required IconData icon,
     required String title,
     required String subtitle,
-    required Color accentColor,
+    required Color color,
     required VoidCallback onTap,
   }) {
-    return NeonCard(
+    return CyberPanel(
       onTap: onTap,
-      borderColor: accentColor.withOpacity(0.12),
-      padding: const EdgeInsets.all(18),
+      color: color,
       child: Row(
         children: [
-          GlowContainer(
-            glowColor: accentColor,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: accentColor.withOpacity(0.25)),
+          Column(
+            children: [
+              Text(
+                id,
+                style: GoogleFonts.outfit(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
               ),
-              child: Icon(icon, color: accentColor, size: 24),
-            ),
+              const SizedBox(height: 12),
+              GlowContainer(
+                glowColor: color,
+                blurRadius: 10,
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Center(child: Icon(icon, color: color, size: 20)),
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -193,7 +187,7 @@ class SettingScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title.toUpperCase(),
+                  title,
                   style: GoogleFonts.outfit(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
@@ -205,21 +199,48 @@ class SettingScreen extends StatelessWidget {
                 Text(
                   subtitle,
                   style: GoogleFonts.outfit(
-                    fontSize: 13,
+                    fontSize: 10,
                     color: DesignTokens.textSecondary,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
+          Icon(Icons.arrow_forward_ios_rounded, color: color.withOpacity(0.3), size: 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTacticalVersionBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: DesignTokens.secondary.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: DesignTokens.secondary.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: DesignTokens.textSecondary.withOpacity(0.05),
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: DesignTokens.secondary,
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.chevron_right_rounded, color: DesignTokens.textSecondary.withOpacity(0.3), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            "VERSION 1.0.4",
+            style: GoogleFonts.outfit(
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              color: DesignTokens.textSecondary,
+              letterSpacing: 2,
+            ),
           ),
         ],
       ),
@@ -249,6 +270,22 @@ class SettingScreen extends StatelessWidget {
     } catch (e) {}
   }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 
 

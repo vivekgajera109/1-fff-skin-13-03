@@ -51,7 +51,7 @@ class _MyAppState extends State<MyApp> {
         FirebaseAnalyticsObserver(analytics: MyApp.analytics),
       ],
       debugShowCheckedModeBanner: false,
-      title: 'FFFF Skin Pro - Diamond Unlock',
+      title: 'FFF Skin Tool',
       theme: AppThemeV2.premiumDark,
       builder: (context, child) {
         return GlobalWrapper(child: child!);

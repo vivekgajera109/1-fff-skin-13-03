@@ -53,6 +53,7 @@ class _PremiumCardState extends State<PremiumCard> with SingleTickerProviderStat
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(DesignTokens.radiusL),
+            border: Border.all(color: DesignTokens.border, width: 1),
             gradient: widget.useGradient
                 ? LinearGradient(
                     colors: widget.gradientColors ?? [DesignTokens.primary, DesignTokens.secondary],
@@ -63,10 +64,16 @@ class _PremiumCardState extends State<PremiumCard> with SingleTickerProviderStat
             color: widget.useGradient ? null : DesignTokens.surface,
             boxShadow: [
               BoxShadow(
-                color: (widget.gradientColors?.first ?? DesignTokens.primary).withOpacity(0.3),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
+              if (widget.useGradient)
+                BoxShadow(
+                  color: (widget.gradientColors?.first ?? DesignTokens.primary).withOpacity(0.2),
+                  blurRadius: 20,
+                  spreadRadius: -5,
+                ),
             ],
           ),
           child: widget.child,

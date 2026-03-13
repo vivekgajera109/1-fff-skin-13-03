@@ -11,11 +11,7 @@ import '../helper/remote_config_service.dart';
 
 class RankedScreen extends StatelessWidget {
   final HomeItemModel model;
-
-  const RankedScreen({
-    super.key,
-    required this.model,
-  });
+  const RankedScreen({super.key, required this.model});
 
   @override
   Widget build(BuildContext context) {
@@ -23,75 +19,55 @@ class RankedScreen extends StatelessWidget {
       useSafeArea: false,
       child: Stack(
         children: [
-          // Background atmospheric elements
-          _buildBackgroundElements(),
+          // Tactical Background
+          _buildTacticalGrid(),
 
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // Header with character image
               CyberSliverAppBar(
-                title: "League Tier",
-                expandedHeight: 240,
+                title: "Tier Selection",
+                expandedHeight: 220,
                 accentColor: DesignTokens.primary,
                 backgroundExtras: [
                   Positioned(
                     right: -30,
-                    bottom: -15,
+                    top: 20,
                     child: Opacity(
-                      opacity: 0.12,
+                      opacity: 0.1,
                       child: Hero(
                         tag: 'character_bg_${model.title}',
                         child: model.image != null 
                             ? Image.asset(model.image!, height: 320, fit: BoxFit.contain)
-                            : Icon(Icons.person_rounded, size: 200, color: DesignTokens.primary),
+                            : Icon(Icons.military_tech_rounded, size: 200, color: DesignTokens.primary),
                       ),
                     ),
                   ),
                 ],
               ),
 
-              // Section header
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Flexible(
-                        child: GradientHeader(
-                          title: 'Competitive Division',
-                          fontSize: 13,
+                      Text(
+                        "IDENTIFY COMPETITIVE DIVISION",
+                        style: GoogleFonts.outfit(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: DesignTokens.primary,
+                          letterSpacing: 3,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: DesignTokens.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: DesignTokens.primary.withOpacity(0.2)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: DesignTokens.primary,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "LIVE STATUS",
-                              style: GoogleFonts.outfit(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                color: DesignTokens.primary,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: 8),
+                      Text(
+                        "Sync your current tier for precise node allocation.",
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          color: DesignTokens.textSecondary,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -99,7 +75,7 @@ class RankedScreen extends StatelessWidget {
                 ),
               ),
 
-              // Rank list
+              // Tactical Tier Modules
               Consumer<HomeProvider>(
                 builder: (context, provider, _) {
                   final ranks = provider.ranked;
@@ -108,12 +84,10 @@ class RankedScreen extends StatelessWidget {
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final rank = ranks[index];
-                          bool showNativeAd = RemoteConfigService.isAdsShow &&
-                              (index != 0 && index % 3 == 0);
+                          bool showNativeAd = RemoteConfigService.isAdsShow && (index != 0 && index % 3 == 0);
                           return Column(
                             children: [
-                              _buildRankItem(context, rank, index),
+                              _buildRankModule(context, ranks[index], index),
                               if (showNativeAd) ...[
                                 const SizedBox(height: 24),
                                 const NativeAdsScreen(),
@@ -137,117 +111,117 @@ class RankedScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBackgroundElements() {
-    return Stack(
-      children: [
-        Positioned(
-          top: 350,
-          left: -100,
-          child: Opacity(
-            opacity: 0.04,
-            child: Icon(Icons.military_tech_rounded, size: 450, color: DesignTokens.primary),
-          ),
-        ),
-      ],
+  Widget _buildTacticalGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.03,
+        child: CustomPaint(painter: _TacticalGridPainter()),
+      ),
     );
   }
 
-  Widget _buildRankItem(BuildContext context, String rank, int index) {
+  Widget _buildRankModule(BuildContext context, String rank, int index) {
     final color = _getRankColor(index);
-    final rankNames = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'HEROIC', 'GRANDMASTER'];
-    final rankTag = index < rankNames.length ? rankNames[index] : 'LEGEND';
+    final rankNames = ['BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'HEROIC', 'VETERAN'];
+    final tag = index < rankNames.length ? rankNames[index] : 'LEGEND';
 
-    return NeonCard(
+    return CyberPanel(
+      color: color,
       onTap: () => _handleSelection(context),
-      padding: const EdgeInsets.all(20),
-      borderColor: color.withOpacity(0.15),
       child: Row(
         children: [
-          // Rank icon box
-          GlowContainer(
-            glowColor: color,
-            child: Container(
-              width: 58,
-              height: 58,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.35), width: 1.5),
+          // Rank ID and Icon
+          Column(
+            children: [
+              Text(
+                "NODE_${index + 1}",
+                style: GoogleFonts.outfit(
+                  fontSize: 7,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
               ),
-              child: Center(
-                child: Icon(Icons.military_tech_rounded, color: color, size: 28),
+              const SizedBox(height: 8),
+              GlowContainer(
+                glowColor: color,
+                blurRadius: 10,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Center(
+                    child: Icon(Icons.military_tech_rounded, color: color, size: 24),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
           const SizedBox(width: 20),
 
-          // Info
+          // Details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Flexible(
+                    Expanded(
                       child: Text(
                         rank.toUpperCase(),
                         style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w900,
                           fontSize: 18,
+                          fontWeight: FontWeight.w900,
                           color: DesignTokens.textPrimary,
                           letterSpacing: -0.5,
                         ),
-                        overflow: TextOverflow.ellipsis,
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: color.withOpacity(0.35), width: 1),
-                      ),
-                      child: Text(
-                        rankTag,
-                        style: GoogleFonts.outfit(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          color: color,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
+                    _buildTag(tag, color),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Synthesizing operational protocols...",
+                  "STABILIZING_TIER_PROTOCOLS...",
                   style: GoogleFonts.outfit(
+                    fontSize: 10,
                     color: DesignTokens.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
             ),
           ),
-
-          // Arrow
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.chevron_right_rounded,
-              color: color,
-              size: 20,
-            ),
-          ),
+          
+          const SizedBox(width: 12),
+          Icon(Icons.chevron_right_rounded, color: color, size: 20),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTag(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.outfit(
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+          color: color,
+        ),
       ),
     );
   }
@@ -262,17 +236,33 @@ class RankedScreen extends StatelessWidget {
 
   Color _getRankColor(int index) {
     const colors = [
-      Color(0xFFCD7F32),
-      Color(0xFFC0C0C0),
-      Color(0xFFFFD700),
-      Color(0xFF00E5FF),
-      Color(0xFF6C5CE7),
-      Color(0xFFFF3D81),
-      Color(0xFFFF9F1C),
+      Color(0xFFCD7F32), // Bronze
+      Color(0xFFC0C0C0), // Silver
+      Color(0xFFFFD700), // Gold
+      Color(0xFF00E5FF), // Platinum
+      Color(0xFF6C5CE7), // Diamond
+      Color(0xFFFF3366), // Heroic
+      Color(0xFFFF9F1C), // Grandmaster
     ];
     return colors[index % colors.length];
   }
 }
+
+class _TacticalGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.white..strokeWidth = 0.5;
+    for (double i = 0; i < size.width; i += 40) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += 40) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 
 
 
