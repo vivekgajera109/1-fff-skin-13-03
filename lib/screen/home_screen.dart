@@ -219,6 +219,57 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 20),
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: DesignTokens.primary.withOpacity(0.5), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: DesignTokens.primary.withOpacity(0.2),
+                      blurRadius: 15,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: Image.asset('assets/image/app_logo.png',
+                      fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "CORE",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: DesignTokens.primary,
+                        letterSpacing: 4,
+                      ),
+                    ),
+                    Text(
+                      "INTERFACE",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: DesignTokens.textSecondary,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
           Text(
             "FFF\nSKIN TOOL",
             style: GoogleFonts.outfit(

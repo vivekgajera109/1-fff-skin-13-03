@@ -7,10 +7,10 @@ class OnboardingProvider extends ChangeNotifier {
 
   final pages = [
     OnboardingPage(
-      title: "Meet Iris",
+      title: "FFF SKIN TOOL",
       subtitle:
-          "Discover the power of Iris and unlock exclusive Free Fire skins with one tap.",
-      image: AppIcons.ffIris,
+          "The ultimate gaming companion for your skin collection and rank assistance.",
+      image: AppIcons.appIcon,
     ),
     OnboardingPage(
       title: "Otho’s Style",

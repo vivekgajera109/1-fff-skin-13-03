@@ -210,10 +210,9 @@ class _NoInternetScreenState extends State<NoInternetScreen> with TickerProvider
                   shape: BoxShape.circle,
                   border: Border.all(color: DesignTokens.accent.withOpacity(0.3), width: 2),
                 ),
-                child: Icon(
-                  Icons.wifi_off_rounded,
-                  size: 60,
-                  color: DesignTokens.accent.withOpacity(0.8 + (_glowCtrl.value * 0.2)),
+                child: ClipOval(
+                  child: Image.asset('assets/image/app_logo.png',
+                      fit: BoxFit.cover),
                 ),
               ),
             ),

@@ -1,5 +1,5 @@
 class AppIcons {
-  static const String appIcon = 'assets/icons/app_icon.png';
+  static const String appIcon = 'assets/image/app_logo.png';
   static const String dimondCharacters = 'assets/image/dimond_characters.png';
   static const String shareApp = 'assets/icons/share_app.svg';
   static const String rateUs = 'assets/icons/rate_us.svg';

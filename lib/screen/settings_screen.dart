@@ -97,6 +97,23 @@ class SettingScreen extends StatelessWidget {
 
                     const SizedBox(height: 60),
                     
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: DesignTokens.secondary.withOpacity(0.3),
+                              width: 1.5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(40),
+                          child: Image.asset('assets/image/app_logo.png',
+                              height: 80, width: 80, fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     Center(child: _buildTacticalVersionBadge()),
                     const SizedBox(height: 120),
                   ]),
